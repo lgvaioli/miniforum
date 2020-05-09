@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node + MySQL</title>
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
+    <link rel="icon" href="./favicon.ico">
+    <script src="jquery-3.5.0.js"></script>
+</head>
+<body>
+    <h1>Mini-foro con Node + MySQL</h1>
+    <form id="myForm">
+        <label>Mensaje:  <input type="text" name="userInput" id="userInput"></label>
+        <button type="submit" class="btn">Enviar</button>
+    </form>
+
+    <h2>Posteos</h2>
+    <div id="postBoard"></div>
+
+    <script>
+    "use strict";
+
+    const POST_URL = window.location.protocol + "//" + window.location.host + "/api/makePost";
+    const GET_URL = window.location.protocol + "//" + window.location.host + "/api/getPosts";
+    const DELETE_URL = window.location.protocol + "//" + window.location.host + "/api/deletePost";
+
+    $(document).ready(function(){
+        // Post delete button callback
+        function postDelete(event) {
+            const postId = event.data;
+
+            // DELETE
+            $.ajax({
+                type: "DELETE",
+                contentType: "application/json",
+                url: DELETE_URL,
+                data: JSON.stringify({postId: postId}),
+                dataType: 'json',
+                success: (serverResponse) => {
+                    // FIXME: this is kinda ugly and we can probably fix it easily by just
+                    // NOT returning a 200 (OK) code from the server when something is... not ok.
+                    if(serverResponse.error) {
+                        alert(serverResponse.error);
+                        return;
+                    }
+
+                    alert(serverResponse);
+
+                    // Delete (remove from DOM) post from postBoard
+                    $("#post_" + postId).remove();
+                },
+                error: (err) => {
+                    alert("Error: could not delete post. Check browser console for details");
+                    console.log("Could not delete post: " + JSON.stringify(err));
+                }
+            });
+        }
+
+        // Adds a post to the postBoard div. If atBeginning is true, adds it to the beginning
+        // of the postBoard div (i.e. prepends it); otherwise, adds it to the end (i.e appends it).
+        function addPost(post, userId, atBeginning) {
+            const $postContainer = $("<div>", {id: "post_" + post.id, class: "post-container"});
+
+            let $deleteBtn = null;
+
+            if(post.userID == userId) {
+                $deleteBtn = $("<button>", {id: "deleteBtn_" + post.id, class: "btn post-deleteBtn"});
+                $deleteBtn.text("Borrar");
+                $deleteBtn.on("click", post.id, postDelete);
+            }
+
+            const $postUsername = $("<p>", {class: "post-info"});
+            $postUsername.text("User: " + post.username);
+
+            const $postId = $("<p>", {class: "post-info"});
+            $postId.text("Post ID: " + post.id);
+
+            const $createdOn = $("<p>", {class: "post-info"});
+            const createdOnStr = new Date(post.created_on).toLocaleString("es-AR");
+            $createdOn.text(createdOnStr);
+
+            const $postText = $("<p>", {class: "post-text"});
+            $postText.text(post.text);
+
+            // Append the delete button only if the post was made by the authenticated user
+            if($deleteBtn) {
+                $postContainer.append($deleteBtn);
+            }
+            
+            $postContainer.append($postUsername);
+            $postContainer.append($postId);
+            $postContainer.append($createdOn);
+            $postContainer.append($postText);
+
+            if(atBeginning) {
+                $("#postBoard").prepend($postContainer);
+            } else {
+                $("#postBoard").append($postContainer);
+            }
+        }
+
+        // Prepends a post to the postBoard div.
+        function prependPost(post, userId) {
+            addPost(post, userId, true);
+        }
+
+        // Appends a post to the postBoard div.
+        function appendPost(post, userId) {
+            addPost(post, userId, false);
+        }
+
+        // GET posts from server
+        function getPosts() {
+            $.ajax({
+                type: "GET",
+                url: GET_URL,
+                dataType: "json",
+                success: (data) => {
+                    data.posts.forEach((element) => {
+                        appendPost(element, data.userId);
+                    });
+                },
+                error: (err) => {
+                    alert("Get error! " + JSON.stringify(err));
+                }
+            });
+        }
+
+        getPosts();
+
+        // Make a new post callback
+        $("#myForm").submit((event) => {
+            // We're gonna submit manually with jQuery
+            event.preventDefault();
+
+            // Check input
+            const userInput = $("#userInput").val();
+
+            if(userInput == "") {
+                alert("Mensaje vacío, sos boludo?");
+                return;
+            }
+
+            // POST
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: POST_URL,
+                data: JSON.stringify({userInput: userInput}),
+                dataType: 'json',
+                success: (data) => {
+                    if(data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    // Clear input
+                    $("#userInput").val("");
+
+                    prependPost(data.post, data.userId);
+                },
+                error: (err) => {
+                    console.log("Error: " + JSON.stringify(err));
+                }
+            });
+        });
+    });
+    </script>
+</body>
+</html>

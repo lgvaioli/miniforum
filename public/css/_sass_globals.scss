@@ -1,0 +1,53 @@
+$color-primary: #87A236;
+$color-dark: #607914;
+$color-darker: #3D5100;
+$color-darker-plus: #303d00;
+$color-light: #B1CA65;
+$color-lighter: #DFF2A2;
+
+$margin-default: 20px;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: $color-primary;
+    color: whitesmoke;
+    font-family: "Roboto", "sans-serif";
+
+    h1, h2 {
+        text-align: center;
+        margin-top: $margin-default * 2;
+        margin-bottom: $margin-default * 2;
+        margin-left: $margin-default;
+        margin-right: $margin-default;
+    }
+
+    form {
+        text-align: center;
+        margin-top: $margin-default * 2;
+    }
+}
+
+.btn {
+    padding: 5px;
+    background-color: $color-dark;
+    color: whitesmoke;
+    border: none;
+    border-radius: 5px;
+
+    &:hover {
+        background-color: $color-darker;
+    }
+
+    &:active {
+        background-color: $color-darker-plus;
+    }
+
+    &:focus {
+        outline: thin dotted;
+    }
+}
