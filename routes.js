@@ -1,8 +1,8 @@
 "use strict";
 
 require("dotenv").config();
-
 const passport = require("passport");
+const { Pool } = require("pg");
 
 // URL to which we redirect on login/authentication failure
 const LOGIN_FAILURE_REDIRECT_URL = "/";
@@ -16,8 +16,8 @@ function ensureAuthenticated(req, res, next) {
     res.redirect(LOGIN_FAILURE_REDIRECT_URL);
 }
 
-// Takes an express app and a MySQL db and sets up our routes
-function setupRoutes(app, db) {
+// Takes an express app and sets up our routes
+function setupRoutes(app) {
     app.route("/")
         .get((req, res) => {
             res.sendFile("login.html", {root: process.env.PUBLIC_DIR});
@@ -36,8 +36,8 @@ function setupRoutes(app, db) {
 
     app.route("/api/newAccount")
         .post((req, res) => {
-            const username = db.escape(req.body.accountUsername);
-            const password = db.escape(req.body.accountPassword);
+            const username = req.body.accountUsername;
+            const password = req.body.accountPassword;
 
             if(username == "''" || password == "''") {
                 res.json({error: "el nombre de usuario o la contraseña están vacíos"});
@@ -46,23 +46,32 @@ function setupRoutes(app, db) {
 
             console.log("Alguien quiere crear una nueva cuenta con usuario " + username +
                         " y password " + password);
+
+            const pool = new Pool();
+
+            const query = {
+                text: "SELECT * FROM users WHERE users.username = $1",
+                values: [username],
+            };
             
             // Find out if account already exists
-            db.query("SELECT * FROM users WHERE users.username = " + username, (err, result) => {
+            pool.query(query, (err, result) => {
                 if(err) {
                     res.json({error: err});
                     return;
                 }
 
-                if(result.length == 1) {
+                if(result.rows.length == 1) {
                     res.json({error: "username not available"});
                     return;
                 }
 
-                const sql = "INSERT INTO users (username, password) VALUES (" +
-                            username + ", " + password + ")";
+                const query = {
+                    text: "INSERT INTO users (username, password) VALUES ($1, $2)",
+                    values: [username, password],
+                };
 
-                db.query(sql, (err, result) => {
+                pool.query(query, (err, result) => {
                     if(err) {
                         res.json({error: err});
                         return;
@@ -75,14 +84,18 @@ function setupRoutes(app, db) {
 
     app.route("/api/makePost")
         .post(ensureAuthenticated, (req, res) => {
-            const userInput = db.escape(req.body.userInput);
             console.log("El usuario \"" + req.user.username + "\", con password \"" +
-                        req.user.password + "\" está por hacer el siguiente post: " + userInput);
+                        req.user.password +
+                        "\" está por hacer el siguiente post: " + req.body.userInput);
 
-            const sql = "INSERT INTO posts (userID, text) VALUES (" + req.user.id + ", " +
-                        userInput + ")";
+            const pool = new Pool();
 
-            db.query(sql, (err, result) => {
+            const query = {
+                text: "INSERT INTO posts (user_id, text) VALUES ($1, $2) RETURNING *",
+                values: [req.user.id, req.body.userInput]
+            };
+
+            pool.query(query, (err, result) => {
                 if(err) {
                     const errMsg = "Could not INSERT INTO: " + err;
                     console.log(errMsg);
@@ -90,37 +103,28 @@ function setupRoutes(app, db) {
                     return;
                 }
 
-                // Get the row we've just inserted
-                db.query("SELECT posts.*, users.username FROM posts INNER JOIN users ON " +
-                         "posts.userID = users.id WHERE posts.id = " + result.insertId,
-                         (err, rows) => {
-                    if(err) {
-                        const errMsg = "Could not get inserted row: " + err;
-                        console.log(errMsg);
-                        res.json({error: errMsg});
-                        return;
-                    }
+                const data = {
+                    userId: req.user.id,
+                    username: req.user.username,
+                    post: result.rows[0],
+                };
 
-                    const data = {
-                        userId: req.user.id,
-                        post: rows[0]
-                    }
-
-                    res.json(data);
-                });
+                res.json(data);
             });
         });
 
     app.route("/api/getPosts")
         .get(ensureAuthenticated, (req, res) => {
-
             console.log("El usuario con id " + req.user.id + " está getteando los posts");
 
-            // const sql = "SELECT * FROM posts ORDER BY created_on DESC";
-            const sql = "SELECT posts.*, users.username FROM posts INNER JOIN users ON "
-                        + "posts.userID = users.id ORDER BY posts.created_on DESC";
+            const pool = new Pool();
 
-            db.query(sql, (err, result, fields) => {
+            const query = {
+                text: "SELECT posts.*, users.username FROM posts INNER JOIN users ON " +
+                "posts.user_id = users.id ORDER BY posts.created_on DESC",
+            };
+
+            pool.query(query, (err, result) => {
                 if(err) {
                     res.json({error: "Could not query database: " + err});
                     return;
@@ -128,7 +132,7 @@ function setupRoutes(app, db) {
 
                 const data = {
                     userId: req.user.id,
-                    posts: result
+                    posts: result.rows
                 }
 
                 res.json(data);
@@ -141,29 +145,37 @@ function setupRoutes(app, db) {
 
             console.log("Alguien quiere borrar el post #" + postId);
 
-            const sql_select = "SELECT * FROM posts WHERE id = " + postId;
+            const pool = new Pool();
 
-            db.query(sql_select, (err, result) => {
+            const query = {
+                text: "SELECT * FROM posts WHERE id = $1",
+                values: [postId]
+            }
+
+            pool.query(query, (err, result) => {
                 if(err) {
                     res.json({error: err});
                     return;
                 }
 
-                if(result.length != 1) {
+                if(result.rows.length != 1) {
                     res.json({error: "invalid post id"});
                     return;
                 }
 
-                const post = result[0];
+                const post = result.rows[0];
 
-                if(post.userID != req.user.id) {
+                if(post.user_id != req.user.id) {
                     res.json({error: "no podés borrar posts de otros usuarios!"});
                     return;
                 }
 
-                const sql_delete = "DELETE FROM posts WHERE id = " + postId;
+                const query = {
+                    text: "DELETE FROM posts WHERE id = $1",
+                    values: [postId],
+                };
 
-                db.query(sql_delete, (err, result) => {
+                pool.query(query, (err, result) => {
                     if(err) {
                         res.json({error: "Server: no pude borrar el post #" + postId + ": " + err});
                         return;

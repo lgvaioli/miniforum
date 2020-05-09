@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
-    <title>Node + MySQL - Login</title>
+    <title>Node + PostgreSQL - Login</title>
     <link rel="stylesheet" type="text/css" href="css/login.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
     <link rel="icon" href="./favicon.ico">
     <script src="jquery-3.5.0.js"></script>
 </head>
 <body>
-    <h1>Loggeate acá</h1>
+    <h1>Mini-foro con Node + PostgreSQL</h1>
+    <h2>Loggeate acá</h2>
     <form id="loginForm" method="POST" action="/login">
         <div class="formContainer">
         <label>Nombre de usuario<input type="text" id="username" name="username"></label>
@@ -19,7 +20,7 @@
         </div>
     </form>
 
-    <h1>No tenés cuenta? Create una!</h1>
+    <h2>No tenés cuenta? Create una!</h2>
     <form id="accountForm" method="POST" action="/api/newAccount">
         <div class="formContainer">
             <label>Nombre de usuario<input type="text" id="accountUsername" name="accountUsername"></label>

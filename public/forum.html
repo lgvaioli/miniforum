@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Node + MySQL</title>
+    <title>Node + PostgreSQL</title>
     <link rel="stylesheet" type="text/css" href="css/index.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
     <link rel="icon" href="./favicon.ico">
     <script src="jquery-3.5.0.js"></script>
 </head>
 <body>
-    <h1>Mini-foro con Node + MySQL</h1>
+    <h1>Mini-foro con Node + PostgreSQL</h1>
     <form id="myForm">
         <label>Mensaje:  <input type="text" name="userInput" id="userInput"></label>
         <button type="submit" class="btn">Enviar</button>
@@ -58,31 +58,31 @@
             });
         }
 
-        // Adds a post to the postBoard div. If atBeginning is true, adds it to the beginning
+        // Adds a post to the postBoard div. If prepend is true, adds it to the beginning
         // of the postBoard div (i.e. prepends it); otherwise, adds it to the end (i.e appends it).
-        function addPost(post, userId, atBeginning) {
-            const $postContainer = $("<div>", {id: "post_" + post.id, class: "post-container"});
+        function addPost(id, username, createdOn, text, deleteButton, prepend) {
+            const $postContainer = $("<div>", {id: "post_" + id, class: "post-container"});
 
             let $deleteBtn = null;
 
-            if(post.userID == userId) {
-                $deleteBtn = $("<button>", {id: "deleteBtn_" + post.id, class: "btn post-deleteBtn"});
+            if(deleteButton) {
+                $deleteBtn = $("<button>", {id: "deleteBtn_" + id, class: "btn post-deleteBtn"});
                 $deleteBtn.text("Borrar");
-                $deleteBtn.on("click", post.id, postDelete);
+                $deleteBtn.on("click", id, postDelete);
             }
 
             const $postUsername = $("<p>", {class: "post-info"});
-            $postUsername.text("User: " + post.username);
+            $postUsername.text("User: " + username);
 
             const $postId = $("<p>", {class: "post-info"});
-            $postId.text("Post ID: " + post.id);
+            $postId.text("Post ID: " + id);
 
             const $createdOn = $("<p>", {class: "post-info"});
-            const createdOnStr = new Date(post.created_on).toLocaleString("es-AR");
+            const createdOnStr = new Date(createdOn).toLocaleString("es-AR");
             $createdOn.text(createdOnStr);
 
             const $postText = $("<p>", {class: "post-text"});
-            $postText.text(post.text);
+            $postText.text(text);
 
             // Append the delete button only if the post was made by the authenticated user
             if($deleteBtn) {
@@ -94,21 +94,11 @@
             $postContainer.append($createdOn);
             $postContainer.append($postText);
 
-            if(atBeginning) {
+            if(prepend) {
                 $("#postBoard").prepend($postContainer);
             } else {
                 $("#postBoard").append($postContainer);
             }
-        }
-
-        // Prepends a post to the postBoard div.
-        function prependPost(post, userId) {
-            addPost(post, userId, true);
-        }
-
-        // Appends a post to the postBoard div.
-        function appendPost(post, userId) {
-            addPost(post, userId, false);
         }
 
         // GET posts from server
@@ -118,8 +108,9 @@
                 url: GET_URL,
                 dataType: "json",
                 success: (data) => {
-                    data.posts.forEach((element) => {
-                        appendPost(element, data.userId);
+                    data.posts.forEach((post) => {
+                        addPost(post.id, post.username, post.created_on, post.text,
+                                post.user_id == data.userId, false);
                     });
                 },
                 error: (err) => {
@@ -156,10 +147,11 @@
                         return;
                     }
 
+                    const post = data.post;
+                    addPost(post.id, data.username, post.created_on, post.text, true, true);
+
                     // Clear input
                     $("#userInput").val("");
-
-                    prependPost(data.post, data.userId);
                 },
                 error: (err) => {
                     console.log("Error: " + JSON.stringify(err));

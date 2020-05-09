@@ -1,9 +1,10 @@
-const session       = require("express-session");
-const passport      = require("passport");
-const LocalStrategy = require("passport-local");
+const session           = require("express-session");
+const passport          = require("passport");
+const LocalStrategy     = require("passport-local");
+const { Pool }          = require("pg");
 
 // Takes express app and sets up authentication with Passport
-function setupAuthentication(app, db) {
+function setupAuthentication(app) {
     app.use(session({
         secret: process.env.SESSION_SECRET,
         resave: true,
@@ -19,14 +20,19 @@ function setupAuthentication(app, db) {
     });
 
     passport.deserializeUser((id, done) => {
-        const userId = db.escape(id);
+        const pool = new Pool();
+        
+        const query = {
+            text: "SELECT * FROM users WHERE id = $1",
+            values: [id],
+        };
 
-        db.query("SELECT * FROM users WHERE id = " + userId, (err, results) => {
+        pool.query(query, (err, res) => {
             if(err) {
                 return done(err);
             }
 
-            const user = results[0]; // mysql always returns an array
+            const user = res.rows[0];
 
             if(!user) {
                 return done("user doesn't exist");
@@ -42,13 +48,19 @@ function setupAuthentication(app, db) {
             console.log("Autenticando usuario \"" + username + "\", con password \""
                         + password + "\"");
 
-            db.query("SELECT * FROM users WHERE userName = " + db.escape(username),
-            (err, results) => {
+            const pool = new Pool();
+
+            const query = {
+                text: "SELECT * FROM users WHERE username = $1",
+                values: [username]
+            };
+
+            pool.query(query, (err, res) => {
                 if(err) {
                     return done(err);
                 }
 
-                const user = results[0];
+                const user = res.rows[0];
 
                 if(!user) {
                     return done("user doesn't exist", false);

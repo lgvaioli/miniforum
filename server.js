@@ -5,7 +5,6 @@ require("dotenv").config();
 const express       = require("express");
 const app           = express();
 const bodyParser    = require("body-parser");
-const mysql         = require("mysql");
 
 // Local modules
 const setupRoutes           = require("./routes.js").setupRoutes;
@@ -21,32 +20,15 @@ app.use(bodyParser.urlencoded({extended: false})); // needed for Passport
 // Static assets
 app.use(express.static(process.env.PUBLIC_DIR, {index: false}));
 
-// MySQL stuff
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_SCHEMA
-});
+setupAuthentication(app);
 
-db.connect((err) => {
+setupRoutes(app);
+
+app.listen(process.env.PORT, (err) => {
     if(err) {
-        console.log("Error while connecting to database: " + err);
+           console.log("Error while setting server to listen: " + err);
         return;
     }
 
-    console.log("Successfully connected to database!");
-
-    setupAuthentication(app, db);
-
-    setupRoutes(app, db);
-
-    app.listen(process.env.PORT, (err) => {
-        if(err) {
-            console.log("Error while setting server to listen: " + err);
-            return;
-        }
-
-        console.log("Server listening at port " + process.env.PORT + "...");
-    });
+    console.log("Server listening at port " + process.env.PORT + "...");
 });
