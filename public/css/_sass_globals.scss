@@ -38,6 +38,7 @@ body {
     color: whitesmoke;
     border: none;
     border-radius: 5px;
+    margin-bottom: $margin-default;
 
     &:hover {
         background-color: $color-darker;

@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
-    <title>Node + PostgreSQL - Login</title>
+    <title>Miniforum - Login</title>
     <link rel="stylesheet" type="text/css" href="css/login.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
     <link rel="icon" href="./favicon.ico">
     <script src="jquery-3.5.0.js"></script>
 </head>
 <body>
-    <h1>Mini-foro con Node + PostgreSQL</h1>
-    <h2>Loggeate acá</h2>
+    <h1>Miniforum. Powered by Node + PostgreSQL</h1>
+    <h2>Login</h2>
     <form id="loginForm" method="POST" action="/login">
         <div class="formContainer">
-        <label>Nombre de usuario<input type="text" id="username" name="username"></label>
-        <label>Contraseña<input type="password" id="password" name="password"></label>
+        <label>Username<input type="text" id="username" name="username"></label>
+        <label>Password<input type="password" id="password" name="password"></label>
         <button type="submit" class="btn">Login</button>
         </div>
     </form>
 
-    <h2>No tenés cuenta? Create una!</h2>
+    <h2>Don't have an account? Create one here!</h2>
     <form id="accountForm" method="POST" action="/api/newAccount">
         <div class="formContainer">
-            <label>Nombre de usuario<input type="text" id="accountUsername" name="accountUsername"></label>
-            <label>Contraseña<input type="password" id="accountPassword" name="accountPassword"></label>
-            <button type="submit" class="btn">Crear cuenta</button>
+            <label>Username<input type="text" id="accountUsername" name="accountUsername"></label>
+            <label>Password<input type="password" id="accountPassword" name="accountPassword"></label>
+            <button type="submit" class="btn">Create account</button>
         </div>
     </form>
 </body>

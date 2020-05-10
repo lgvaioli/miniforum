@@ -45,8 +45,7 @@ function setupAuthentication(app) {
     // Passport local strategy
     passport.use(new LocalStrategy(
         function(username, password, done) {
-            console.log("Autenticando usuario \"" + username + "\", con password \""
-                        + password + "\"");
+            console.log("Authenticating user \"" + username + "\"");
 
             const pool = new Pool();
 

@@ -44,8 +44,7 @@ function setupRoutes(app) {
                 return;
             }
 
-            console.log("Alguien quiere crear una nueva cuenta con usuario " + username +
-                        " y password " + password);
+            console.log("Trying to create new user account \"" + username + "\"");
 
             const pool = new Pool();
 
@@ -84,9 +83,8 @@ function setupRoutes(app) {
 
     app.route("/api/makePost")
         .post(ensureAuthenticated, (req, res) => {
-            console.log("El usuario \"" + req.user.username + "\", con password \"" +
-                        req.user.password +
-                        "\" está por hacer el siguiente post: " + req.body.userInput);
+            console.log("User \"" + req.user.username + "\" is about to post the following: " +
+                        req.body.userInput);
 
             const pool = new Pool();
 
@@ -115,7 +113,7 @@ function setupRoutes(app) {
 
     app.route("/api/getPosts")
         .get(ensureAuthenticated, (req, res) => {
-            console.log("El usuario con id " + req.user.id + " está getteando los posts");
+            console.log("User \"" + req.user.username + "\" is getting all posts");
 
             const pool = new Pool();
 
@@ -143,7 +141,7 @@ function setupRoutes(app) {
         .delete(ensureAuthenticated, (req, res) => {
             const postId = req.body.postId;
 
-            console.log("Alguien quiere borrar el post #" + postId);
+            console.log("User \"" + req.user.username + "\" is about to delete post #" + postId);
 
             const pool = new Pool();
 
@@ -166,7 +164,7 @@ function setupRoutes(app) {
                 const post = result.rows[0];
 
                 if(post.user_id != req.user.id) {
-                    res.json({error: "no podés borrar posts de otros usuarios!"});
+                    res.json({error: "you can't delete other users' posts!"});
                     return;
                 }
 
@@ -177,11 +175,11 @@ function setupRoutes(app) {
 
                 pool.query(query, (err, result) => {
                     if(err) {
-                        res.json({error: "Server: no pude borrar el post #" + postId + ": " + err});
+                        res.json({error: "Server: Could not delete post #" + postId + ": " + err});
                         return;
                     }
 
-                    res.json("Server: Borraste el post #" + postId);
+                    res.json("Server: You deleted post #" + postId);
                 });
             });
         });
