@@ -1,10 +1,9 @@
 const session           = require("express-session");
 const passport          = require("passport");
 const LocalStrategy     = require("passport-local");
-const { Pool }          = require("pg");
 
 // Takes express app and sets up authentication with Passport
-function setupAuthentication(app) {
+function setupAuthentication(app, db) {
     app.use(session({
         secret: process.env.SESSION_SECRET,
         resave: true,
@@ -20,14 +19,12 @@ function setupAuthentication(app) {
     });
 
     passport.deserializeUser((id, done) => {
-        const pool = new Pool();
-        
         const query = {
             text: "SELECT * FROM users WHERE id = $1",
             values: [id],
         };
 
-        pool.query(query, (err, res) => {
+        db.query(query, (err, res) => {
             if(err) {
                 return done(err);
             }
@@ -47,14 +44,12 @@ function setupAuthentication(app) {
         function(username, password, done) {
             console.log("Authenticating user \"" + username + "\"");
 
-            const pool = new Pool();
-
             const query = {
                 text: "SELECT * FROM users WHERE username = $1",
                 values: [username]
             };
 
-            pool.query(query, (err, res) => {
+            db.query(query, (err, res) => {
                 if(err) {
                     return done(err);
                 }

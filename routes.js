@@ -2,7 +2,6 @@
 
 require("dotenv").config();
 const passport = require("passport");
-const { Pool } = require("pg");
 
 // URL to which we redirect on login/authentication failure
 const LOGIN_FAILURE_REDIRECT_URL = "/";
@@ -17,7 +16,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 // Takes an express app and sets up our routes
-function setupRoutes(app) {
+function setupRoutes(app, db) {
     app.route("/")
         .get((req, res) => {
             res.sendFile("login.html", {root: process.env.PUBLIC_DIR});
@@ -46,15 +45,13 @@ function setupRoutes(app) {
 
             console.log("Trying to create new user account \"" + username + "\"");
 
-            const pool = new Pool();
-
             const query = {
                 text: "SELECT * FROM users WHERE users.username = $1",
                 values: [username],
             };
             
             // Find out if account already exists
-            pool.query(query, (err, result) => {
+            db.query(query, (err, result) => {
                 if(err) {
                     res.json({error: err});
                     return;
@@ -70,7 +67,7 @@ function setupRoutes(app) {
                     values: [username, password],
                 };
 
-                pool.query(query, (err, result) => {
+                db.query(query, (err, result) => {
                     if(err) {
                         res.json({error: err});
                         return;
@@ -86,14 +83,12 @@ function setupRoutes(app) {
             console.log("User \"" + req.user.username + "\" is about to post the following: " +
                         req.body.userInput);
 
-            const pool = new Pool();
-
             const query = {
                 text: "INSERT INTO posts (user_id, text) VALUES ($1, $2) RETURNING *",
                 values: [req.user.id, req.body.userInput]
             };
 
-            pool.query(query, (err, result) => {
+            db.query(query, (err, result) => {
                 if(err) {
                     const errMsg = "Could not INSERT INTO: " + err;
                     console.log(errMsg);
@@ -115,14 +110,12 @@ function setupRoutes(app) {
         .get(ensureAuthenticated, (req, res) => {
             console.log("User \"" + req.user.username + "\" is getting all posts");
 
-            const pool = new Pool();
-
             const query = {
                 text: "SELECT posts.*, users.username FROM posts INNER JOIN users ON " +
                 "posts.user_id = users.id ORDER BY posts.created_on DESC",
             };
 
-            pool.query(query, (err, result) => {
+            db.query(query, (err, result) => {
                 if(err) {
                     res.json({error: "Could not query database: " + err});
                     return;
@@ -143,14 +136,12 @@ function setupRoutes(app) {
 
             console.log("User \"" + req.user.username + "\" is about to delete post #" + postId);
 
-            const pool = new Pool();
-
             const query = {
                 text: "SELECT * FROM posts WHERE id = $1",
                 values: [postId]
             }
 
-            pool.query(query, (err, result) => {
+            db.query(query, (err, result) => {
                 if(err) {
                     res.json({error: err});
                     return;
@@ -173,7 +164,7 @@ function setupRoutes(app) {
                     values: [postId],
                 };
 
-                pool.query(query, (err, result) => {
+                db.query(query, (err, result) => {
                     if(err) {
                         res.json({error: "Server: Could not delete post #" + postId + ": " + err});
                         return;
