@@ -12,7 +12,7 @@ const setupAuthentication   = require("./authentication.js").setupAuthentication
 // PostgreSQL
 const client = new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_NO_SSL ? false : true,
+    ssl: process.env.DATABASE_NO_SSL ? false : { rejectUnauthorized: false },
 });
 
 client.connect((err) => {
