@@ -40,7 +40,7 @@ function setupRoutes(app) {
             const password = req.body.accountPassword;
 
             if(username == "''" || password == "''") {
-                res.json({error: "el nombre de usuario o la contraseña están vacíos"});
+                res.json({error: "empty username and/or password"});
                 return;
             }
 
@@ -76,7 +76,7 @@ function setupRoutes(app) {
                         return;
                     }
 
-                    res.json("usuario creado! Volvé a la página principal y loggeate");
+                    res.json("user created! Go back to the main page and login");
                 });
             });
         });
