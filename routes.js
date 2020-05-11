@@ -1,7 +1,10 @@
 "use strict";
 
 require("dotenv").config();
-const passport = require("passport");
+const passport          = require("passport");
+const isValidUsername   = require("./validation.js").isValidUsername;
+const isValidPassword   = require("./validation.js").isValidPassword;
+const isValidComment    = require("./validation.js").isValidComment;
 
 // URL to which we redirect on login/authentication failure
 const LOGIN_FAILURE_REDIRECT_URL = "/";
@@ -38,8 +41,15 @@ function setupRoutes(app, db) {
             const username = req.body.accountUsername;
             const password = req.body.accountPassword;
 
-            if(username == "''" || password == "''") {
-                res.json({error: "empty username and/or password"});
+            if(!isValidUsername(username)) {
+                res.json({error: "invalid username. Valid usernames are between 1 " +
+                    "and 20 characters in length, and may only contain the following " +
+                    "characters:  a-z, A-Z, 0-9, - (dash), and _ (underscore)"});
+                return;
+            }
+
+            if(!isValidPassword(password)) {
+                res.json({error: "passwords must be at least 6 characters long"});
                 return;
             }
 
@@ -80,6 +90,12 @@ function setupRoutes(app, db) {
 
     app.route("/api/makePost")
         .post(ensureAuthenticated, (req, res) => {
+            if(!isValidComment(req.body.userInput)) {
+                res.json({error: "invalid post. Posts must be at most 255 characters " +
+                         "long and can't be all whitespace"});
+                return;
+            }
+
             console.log("User \"" + req.user.username + "\" is about to post the following: " +
                         req.body.userInput);
 
