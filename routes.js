@@ -5,6 +5,7 @@ const passport          = require("passport");
 const isValidUsername   = require("./validation.js").isValidUsername;
 const isValidPassword   = require("./validation.js").isValidPassword;
 const isValidComment    = require("./validation.js").isValidComment;
+const bcrypt            = require("bcrypt");
 
 // URL to which we redirect on login/authentication failure
 const LOGIN_FAILURE_REDIRECT_URL = "/";
@@ -72,18 +73,26 @@ function setupRoutes(app, db) {
                     return;
                 }
 
-                const query = {
-                    text: "INSERT INTO users (username, password) VALUES ($1, $2)",
-                    values: [username, password],
-                };
-
-                db.query(query, (err, result) => {
+                // Create user account. We store a hash instead of the plaintext password.
+                bcrypt.hash(password, parseInt(process.env.BCRYPT_SALTROUNDS), (err, hash) => {
                     if(err) {
-                        res.json({error: err});
+                        res.json({error: err.toString()});
                         return;
                     }
 
-                    res.json("user created! Go back to the main page and login");
+                    const query = {
+                        text: "INSERT INTO users (username, password) VALUES ($1, $2)",
+                        values: [username, hash],
+                    };
+    
+                    db.query(query, (err, result) => {
+                        if(err) {
+                            res.json({error: err});
+                            return;
+                        }
+    
+                        res.json("user created! Go back to the main page and login");
+                    });
                 });
             });
         });

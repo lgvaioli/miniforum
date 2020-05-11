@@ -1,6 +1,7 @@
 const session           = require("express-session");
 const passport          = require("passport");
 const LocalStrategy     = require("passport-local");
+const bcrypt            = require("bcrypt");
 
 // Takes express app and sets up authentication with Passport
 function setupAuthentication(app, db) {
@@ -60,11 +61,17 @@ function setupAuthentication(app, db) {
                     return done("user doesn't exist", false);
                 }
 
-                if(password !== user.password) {
-                    return done("incorrect password", false);
-                }
+                bcrypt.compare(password, user.password, (err, match) => {
+                    if(err) {
+                        return done(err);
+                    }
 
-                return done(null, user);
+                    if(match) {
+                        return done(null, user);
+                    } else {
+                        return done("incorrect password", false);
+                    }
+                }); 
             });
         }
     ));
