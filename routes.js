@@ -10,6 +10,12 @@ const bcrypt            = require("bcrypt");
 // URL to which we redirect on login/authentication failure
 const LOGIN_FAILURE_REDIRECT_URL = "/";
 
+// URL to which we redirect on successful account creation
+const NEW_ACCOUNT_SUCCESS_REDIRECT_URL = "/forum";
+
+// URL to which we redirect on new account creation failure
+const NEW_ACCOUNT_FAILURE_REDIRECT_URL = "/";
+
 // Middleware which uses Passport's isAuthenticated to make sure a user is authenticated
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -81,7 +87,7 @@ function setupRoutes(app, db) {
                     }
 
                     const query = {
-                        text: "INSERT INTO users (username, password) VALUES ($1, $2)",
+                        text: "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
                         values: [username, hash],
                     };
     
@@ -90,8 +96,24 @@ function setupRoutes(app, db) {
                             res.json({error: err});
                             return;
                         }
-    
-                        res.json("user created! Go back to the main page and login");
+
+                        // If we're here the new account was successfuly created. We authenticate
+                        // it with Passport and redirect.
+                        const user = {
+                            username: username,
+                            password: hash,
+                            id: result.rows[0].id,
+                        };
+
+                        req.login(user, (err) => {
+                            if(err) {
+                                console.log("Error logging new user \"" + username + "\": " + err);
+                                res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
+                                return;
+                            }
+
+                            res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
+                        });
                     });
                 });
             });
