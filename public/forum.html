@@ -150,8 +150,12 @@
                     const post = data.post;
                     addPost(post.id, data.username, post.created_on, post.text, true, true);
 
-                    // Clear input
-                    $("#userInput").val("");
+                    // Clear input. We also trigger the input event to update the chars
+                    // left counter; otherwise it gets stuck at the last value, which is
+                    // just ugly.
+                    $("#userInput")
+                        .val("")
+                        .trigger("input");
                 },
                 error: (err) => {
                     console.log("Error: " + JSON.stringify(err));
