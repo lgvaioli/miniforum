@@ -1,0 +1,101 @@
+* {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+body {
+  background-color: #87A236;
+  color: whitesmoke;
+  font-family: "Roboto", "sans-serif";
+}
+
+body h1, body h2 {
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+body form {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn {
+  padding: 5px;
+  background-color: #607914;
+  color: whitesmoke;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.btn:hover {
+  background-color: #3D5100;
+}
+
+.btn:active {
+  background-color: #303d00;
+}
+
+.btn:focus {
+  outline: thin dotted;
+}
+
+.post-container {
+  background-color: #DFF2A2;
+  color: black;
+  border: 5px #607914 solid;
+  border-radius: 10px;
+  width: 70%;
+  padding: 15px;
+  margin-bottom: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+      -ms-hyphens: auto;
+          hyphens: auto;
+}
+
+.post-container .post-deleteBtn {
+  float: right;
+}
+
+.post-container .post-info {
+  font-size: 0.8em;
+  text-align: left;
+}
+
+.post-container .post-text {
+  margin-top: 10px;
+}
+
+textarea {
+  margin-bottom: 20px;
+  width: 500px;
+  height: 100px;
+  resize: none;
+  border: 5px #607914 solid;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+textarea:focus {
+  outline: thin dotted;
+}
+
+.counter-container {
+  font-size: 0.7em;
+  margin-bottom: 5px;
+}
+
+#logout-btn {
+  margin-left: 20px;
+  margin-top: 20px;
+}
+/*# sourceMappingURL=forum.css.map */
