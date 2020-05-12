@@ -6,10 +6,11 @@ const bcrypt            = require("bcrypt");
 // Takes express app and sets up authentication with Passport
 function setupAuthentication(app, db) {
     app.use(session({
+        store: new (require('connect-pg-simple')(session))(),
         secret: process.env.SESSION_SECRET,
         resave: true,
-        saveUninitialized: true
-    }))
+        saveUninitialized: true,
+    }));
 
     app.use(passport.initialize());
     app.use(passport.session());
