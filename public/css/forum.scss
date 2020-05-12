@@ -4,6 +4,8 @@ $post-width: 70%;
 $post-padding: 15px;
 $post-border-width: 5px;
 $post-border-radius: 10px;
+$textarea-width: 500px;
+$textarea-height: 100px;
 
 .post-container {
     background-color: $color-lighter;
@@ -30,5 +32,25 @@ $post-border-radius: 10px;
 
     .post-text {
         margin-top: 10px;
+        //white-space: pre-wrap;
     }
+}
+
+textarea {
+    margin-bottom: $margin-default;
+    width: $textarea-width;
+    height: $textarea-height;
+    resize: none;
+    border: $post-border-width $color-dark solid;
+    border-radius: $post-border-radius;
+    padding: 10px;
+
+    &:focus {
+        outline: thin dotted;
+    }
+}
+
+.counter-container {
+    font-size: 0.7em;
+    margin-bottom: 5px;
 }

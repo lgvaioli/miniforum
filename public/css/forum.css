@@ -74,4 +74,23 @@ body form {
 .post-container .post-text {
   margin-top: 10px;
 }
-/*# sourceMappingURL=index.css.map */
+
+textarea {
+  margin-bottom: 20px;
+  width: 500px;
+  height: 100px;
+  resize: none;
+  border: 5px #607914 solid;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+textarea:focus {
+  outline: thin dotted;
+}
+
+.counter-container {
+  font-size: 0.7em;
+  margin-bottom: 5px;
+}
+/*# sourceMappingURL=forum.css.map */

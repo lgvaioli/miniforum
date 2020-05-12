@@ -99,18 +99,22 @@ function setupRoutes(app, db) {
 
     app.route("/api/makePost")
         .post(ensureAuthenticated, (req, res) => {
-            if(!isValidComment(req.body.userInput)) {
+            let userInput = req.body.userInput;
+
+            if(!isValidComment(userInput)) {
                 res.json({error: "invalid post. Posts must be at most 255 characters " +
                          "long and can't be all whitespace"});
                 return;
             }
 
+            userInput = userInput.trim();
+
             console.log("User \"" + req.user.username + "\" is about to post the following: " +
-                        req.body.userInput);
+                        userInput);
 
             const query = {
                 text: "INSERT INTO posts (user_id, text) VALUES ($1, $2) RETURNING *",
-                values: [req.user.id, req.body.userInput]
+                values: [req.user.id, userInput]
             };
 
             db.query(query, (err, result) => {
