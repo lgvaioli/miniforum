@@ -7,14 +7,11 @@ const isValidPassword   = require("./validation.js").isValidPassword;
 const isValidComment    = require("./validation.js").isValidComment;
 const bcrypt            = require("bcrypt");
 
-// URL to which we redirect on login/authentication failure
+// Redirect URLs
 const LOGIN_FAILURE_REDIRECT_URL = "/";
-
-// URL to which we redirect on successful account creation
 const NEW_ACCOUNT_SUCCESS_REDIRECT_URL = "/forum";
-
-// URL to which we redirect on new account creation failure
 const NEW_ACCOUNT_FAILURE_REDIRECT_URL = "/";
+const LOGOUT_REDIRECT_URL = "/"; 
 
 // Middleware which uses Passport's isAuthenticated to make sure a user is authenticated
 function ensureAuthenticated(req, res, next) {
@@ -224,6 +221,17 @@ function setupRoutes(app, db) {
                     res.json("Server: You deleted post #" + postId);
                 });
             });
+        });
+
+    app.route("/api/logout")
+        .get(ensureAuthenticated, (req, res) => {
+            console.log("User \"" + req.user.username + "\" is about to logout");
+
+            req.logout();
+
+            // We don't actually redirect because we use jQuery ajax in the client
+            // side, and handling "real" redirects with that is a mess.
+            res.json({redirect: LOGOUT_REDIRECT_URL});
         });
 }
 

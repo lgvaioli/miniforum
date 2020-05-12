@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <button class="btn" id="logout-btn">Logout</button>
     <title>Miniforum</title>
     <link rel="stylesheet" type="text/css" href="css/forum.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
@@ -24,9 +25,10 @@
     <script>
     "use strict";
 
-    const POST_URL = window.location.protocol + "//" + window.location.host + "/api/makePost";
-    const GET_URL = window.location.protocol + "//" + window.location.host + "/api/getPosts";
-    const DELETE_URL = window.location.protocol + "//" + window.location.host + "/api/deletePost";
+    const MAKE_POST_URL = window.location.protocol + "//" + window.location.host + "/api/makePost";
+    const GET_POSTS_URL = window.location.protocol + "//" + window.location.host + "/api/getPosts";
+    const DELETE_POSTS_URL = window.location.protocol + "//" + window.location.host + "/api/deletePost";
+    const LOGOUT_URL = window.location.protocol + "//" + window.location.host + "/api/logout";
 
     $(document).ready(function(){
         // Post delete button callback
@@ -37,7 +39,7 @@
             $.ajax({
                 type: "DELETE",
                 contentType: "application/json",
-                url: DELETE_URL,
+                url: DELETE_POSTS_URL,
                 data: JSON.stringify({postId: postId}),
                 dataType: 'json',
                 success: (serverResponse) => {
@@ -107,7 +109,7 @@
         function getPosts() {
             $.ajax({
                 type: "GET",
-                url: GET_URL,
+                url: GET_POSTS_URL,
                 dataType: "json",
                 success: (data) => {
                     data.posts.forEach((post) => {
@@ -138,7 +140,7 @@
             $.ajax({
                 type: "POST",
                 contentType: "application/json",
-                url: POST_URL,
+                url: MAKE_POST_URL,
                 data: JSON.stringify({userInput: userInput}),
                 dataType: 'json',
                 success: (data) => {
@@ -171,6 +173,23 @@
                 const charsLeft = maxlength - $("#userInput").val().length;
                 $("#input-counter").text(charsLeft);
             });
+
+        // Logout button
+        $("#logout-btn").on("click", (event) => {
+            $.ajax({
+                type: "GET",
+                url: LOGOUT_URL,
+                dataType: "json",
+                success: (data) => {
+                    if(data.redirect) {
+                        window.location.replace(data.redirect);
+                    }
+                },
+                error: (err) => {
+                    alert("Get error! " + JSON.stringify(err));
+                }
+            });
+        });
 
         getPosts();
     });

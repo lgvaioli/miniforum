@@ -93,4 +93,9 @@ textarea:focus {
   font-size: 0.7em;
   margin-bottom: 5px;
 }
+
+#logout-btn {
+  margin-left: 20px;
+  margin-top: 20px;
+}
 /*# sourceMappingURL=forum.css.map */
