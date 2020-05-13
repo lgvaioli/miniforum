@@ -62,8 +62,10 @@ body form {
           hyphens: auto;
 }
 
-.post-container .post-deleteBtn {
+.post-container .post-btn {
   float: right;
+  width: 50px;
+  margin-left: 10px;
 }
 
 .post-container .post-info {
@@ -97,5 +99,9 @@ textarea:focus {
 #logout-btn {
   margin-left: 20px;
   margin-top: 20px;
+}
+
+.cancel-btn {
+  margin-right: 10px;
 }
 /*# sourceMappingURL=forum.css.map */

@@ -4,6 +4,7 @@ $post-width: 70%;
 $post-padding: 15px;
 $post-border-width: 5px;
 $post-border-radius: 10px;
+$post-button-width: 50px;
 $textarea-width: 500px;
 $textarea-height: 100px;
 
@@ -21,8 +22,10 @@ $textarea-height: 100px;
     overflow-wrap: break-word;
     hyphens: auto;
 
-    .post-deleteBtn {
+    .post-btn {
         float: right;
+        width: $post-button-width;
+        margin-left: 10px;
     }
 
     .post-info {
@@ -32,7 +35,6 @@ $textarea-height: 100px;
 
     .post-text {
         margin-top: 10px;
-        //white-space: pre-wrap;
     }
 }
 
@@ -58,4 +60,8 @@ textarea {
 #logout-btn {
     margin-left: $margin-default;
     margin-top: $margin-default;
+}
+
+.cancel-btn {
+    margin-right: 10px;
 }
