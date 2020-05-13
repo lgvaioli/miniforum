@@ -5,7 +5,6 @@ const passport          = require("passport");
 const isValidUsername   = require("./validation.js").isValidUsername;
 const isValidPassword   = require("./validation.js").isValidPassword;
 const isValidComment    = require("./validation.js").isValidComment;
-const bcrypt            = require("bcrypt");
 
 // Redirect URLs
 const LOGIN_FAILURE_REDIRECT_URL = "/";
@@ -59,65 +58,26 @@ function setupRoutes(app, db) {
 
             console.log("Trying to create new user account \"" + username + "\"");
 
-            const query = {
-                text: "SELECT * FROM users WHERE users.username = $1",
-                values: [username],
-            };
-            
-            // Find out if account already exists
-            db.query(query, (err, result) => {
-                if(err) {
-                    res.json({error: err});
-                    return;
-                }
-
-                if(result.rows.length == 1) {
-                    res.json({error: "username not available"});
-                    return;
-                }
-
-                // Create user account. We store a hash instead of the plaintext password.
-                bcrypt.hash(password, parseInt(process.env.BCRYPT_SALTROUNDS), (err, hash) => {
-                    if(err) {
-                        res.json({error: err.toString()});
-                        return;
-                    }
-
-                    const query = {
-                        text: "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
-                        values: [username, hash],
-                    };
-    
-                    db.query(query, (err, result) => {
+            db.createUser(username, password)
+                .then((user) => {
+                    req.login(user, (err) => {
                         if(err) {
-                            res.json({error: err});
+                            console.log("Error logging new user \"" + username + "\": " + err);
+                            res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
                             return;
                         }
 
-                        // If we're here the new account was successfuly created. We authenticate
-                        // it with Passport and redirect.
-                        const user = {
-                            username: username,
-                            password: hash,
-                            id: result.rows[0].id,
-                        };
-
-                        req.login(user, (err) => {
-                            if(err) {
-                                console.log("Error logging new user \"" + username + "\": " + err);
-                                res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
-                                return;
-                            }
-
-                            res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
-                        });
+                        res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
                     });
+                })
+                .catch((err) => {
+                    res.json({error: err});
                 });
-            });
         });
 
     app.route("/api/makePost")
         .post(ensureAuthenticated, (req, res) => {
+            const userId = req.user.id;
             let userInput = req.body.userInput;
 
             if(!isValidComment(userInput)) {
@@ -131,51 +91,37 @@ function setupRoutes(app, db) {
             console.log("User \"" + req.user.username + "\" is about to post the following: " +
                         userInput);
 
-            const query = {
-                text: "INSERT INTO posts (user_id, text) VALUES ($1, $2) RETURNING *",
-                values: [req.user.id, userInput]
-            };
-
-            db.query(query, (err, result) => {
-                if(err) {
-                    const errMsg = "Could not INSERT INTO: " + err;
-                    console.log(errMsg);
-                    res.json({error: errMsg});
-                    return;
-                }
-
-                const data = {
-                    userId: req.user.id,
-                    username: req.user.username,
-                    post: result.rows[0],
-                };
-
-                res.json(data);
-            });
+            db.makePost(userId, userInput)
+                .then((post) => {
+                    const data = {
+                        userId: userId,
+                        username: req.user.username,
+                        post: post,
+                    };
+            
+                    res.json(data);
+                })
+                .catch((err) => {
+                    res.json({error: err});
+                });
         });
 
     app.route("/api/getPosts")
         .get(ensureAuthenticated, (req, res) => {
             console.log("User \"" + req.user.username + "\" is getting all posts");
 
-            const query = {
-                text: "SELECT posts.*, users.username FROM posts INNER JOIN users ON " +
-                "posts.user_id = users.id ORDER BY posts.created_on DESC",
-            };
-
-            db.query(query, (err, result) => {
-                if(err) {
-                    res.json({error: "Could not query database: " + err});
-                    return;
-                }
-
-                const data = {
-                    userId: req.user.id,
-                    posts: result.rows
-                }
-
-                res.json(data);
-            });
+            db.getPosts()
+                .then((posts) => {
+                    const data = {
+                        userId: req.user.id,
+                        posts: posts,
+                    };
+    
+                    res.json(data);
+                })
+                .catch((err) => {
+                    res.json({error: err});
+                });
         });
 
     app.route("/api/deletePost")
@@ -184,43 +130,24 @@ function setupRoutes(app, db) {
 
             console.log("User \"" + req.user.username + "\" is about to delete post #" + postId);
 
-            const query = {
-                text: "SELECT * FROM posts WHERE id = $1",
-                values: [postId]
-            }
-
-            db.query(query, (err, result) => {
-                if(err) {
-                    res.json({error: err});
-                    return;
-                }
-
-                if(result.rows.length != 1) {
-                    res.json({error: "invalid post id"});
-                    return;
-                }
-
-                const post = result.rows[0];
-
-                if(post.user_id != req.user.id) {
-                    res.json({error: "you can't delete other users' posts!"});
-                    return;
-                }
-
-                const query = {
-                    text: "DELETE FROM posts WHERE id = $1",
-                    values: [postId],
-                };
-
-                db.query(query, (err, result) => {
-                    if(err) {
-                        res.json({error: "Server: Could not delete post #" + postId + ": " + err});
+            db.findPost(postId)
+                .then((post) => {
+                    if(post.user_id != req.user.id) {
+                        res.json({error: "you can't delete other users' posts!"});
                         return;
                     }
 
-                    res.json("Server: You deleted post #" + postId);
+                    db.deletePost(postId)
+                        .then((success) => {
+                            res.json(success);
+                        })
+                        .catch((err) => {
+                            res.json({error: err});
+                        });
+                })
+                .catch((err) => {
+                    res.json({error: err});
                 });
-            });
         });
 
     app.route("/api/logout")

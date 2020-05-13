@@ -21,24 +21,13 @@ function setupAuthentication(app, db) {
     });
 
     passport.deserializeUser((id, done) => {
-        const query = {
-            text: "SELECT * FROM users WHERE id = $1",
-            values: [id],
-        };
-
-        db.query(query, (err, res) => {
-            if(err) {
-                return done(err);
-            }
-
-            const user = res.rows[0];
-
-            if(!user) {
-                return done("user doesn't exist");
-            }
-
-            done(null, user);
-        })
+        db.findUserById(id)
+            .then((user) => {
+                done(null, user);
+            })
+            .catch((err) => {
+                done(err);
+            });
     });
 
     // Passport local strategy
@@ -46,34 +35,23 @@ function setupAuthentication(app, db) {
         function(username, password, done) {
             console.log("Authenticating user \"" + username + "\"");
 
-            const query = {
-                text: "SELECT * FROM users WHERE username = $1",
-                values: [username]
-            };
-
-            db.query(query, (err, res) => {
-                if(err) {
+            db.findUserByName(username)
+                .then((user) => {
+                    bcrypt.compare(password, user.password, (err, match) => {
+                        if(err) {
+                            return done(err);
+                        }
+    
+                        if(match) {
+                            return done(null, user);
+                        } else {
+                            return done("incorrect password", false);
+                        }
+                    });
+                })
+                .catch((err) => {
                     return done(err);
-                }
-
-                const user = res.rows[0];
-
-                if(!user) {
-                    return done("user doesn't exist", false);
-                }
-
-                bcrypt.compare(password, user.password, (err, match) => {
-                    if(err) {
-                        return done(err);
-                    }
-
-                    if(match) {
-                        return done(null, user);
-                    } else {
-                        return done("incorrect password", false);
-                    }
-                }); 
-            });
+                });
         }
     ));
 }

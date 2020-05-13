@@ -112,13 +112,18 @@
                 url: GET_POSTS_URL,
                 dataType: "json",
                 success: (data) => {
+                    if(data.error) {
+                        alert(JSON.stringify(data));
+                        return;
+                    }
+
                     data.posts.forEach((post) => {
                         addPost(post.id, post.username, post.created_on, post.text,
                                 post.user_id == data.userId, false);
                     });
                 },
                 error: (err) => {
-                    alert("Get error! " + JSON.stringify(err));
+                    alert(JSON.stringify(err));
                 }
             });
         }
