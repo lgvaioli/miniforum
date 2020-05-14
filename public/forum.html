@@ -62,29 +62,24 @@
             });
         }
 
-        function cancelButtonCallback(event) {
-            event.preventDefault();
-            const postId = event.data;
-            alert("Implement cancelButtonCallback! Post #" + postId);
-        }
-
         function postEditButtonCallback(event) {
             event.preventDefault();
             const postId = event.data;
             alert("Implement postEditButtonCallback! Post #" + postId);
         }
 
-        function editButtonCallback(event) {
-            const postId = event.data;
-            const $form = $("<form>");
-
+        // Builds an editable post widget (i.e. the textarea with a chars left counter that
+        // appears when the user clicks on "Edit").
+        function buildEditablePostWidget(postId, postText, $postContainer) {
+            const $form = $("<div>", {id: "editable_" + postId, class: "post-editable"});
+            $form.css("display", "none");
             const $counterContainer = $("<p>", {class: "counter-container"});
             const $inputCounter = $("<span>", {id: "inputCounter_" + postId});
             $counterContainer.append($inputCounter);
             $counterContainer.append(" characters left");
 
             const $textarea = $("<textarea>");
-            $textarea.val($("#postText_" + postId).text());
+            $textarea.val(postText);
             $textarea.attr("maxlength", POST_MAXLENGTH);
             $textarea.on("input", (event) => {
                 const charsLeft = POST_MAXLENGTH - $textarea.val().length;
@@ -95,7 +90,10 @@
 
             const $cancelBtn = $("<button>", {class: "btn cancel-btn"});
             $cancelBtn.text("Cancel");
-            $cancelBtn.on("click", postId, cancelButtonCallback);
+            $cancelBtn.on("click", (event) => {
+                $form.toggle();
+                $postContainer.toggle();
+            });
 
             const $postEditBtn = $("<button>", {class: "btn"});
             $postEditBtn.text("Post edit");
@@ -107,28 +105,16 @@
             $form.append($cancelBtn);
             $form.append($postEditBtn);
 
-            $("#post_" + postId).replaceWith($form);
+            return $form;
         }
 
         // Adds a post to the postBoard div. If prepend is true, adds it to the beginning
         // of the postBoard div (i.e. prepends it); otherwise, adds it to the end (i.e appends it).
-        function addPost(id, username, createdOn, text, deleteButton, editButton, prepend) {
+        // If userOwnsPost is true, "Edit" and "Delete" buttons are added.
+        function addPost(id, username, createdOn, text, userOwnsPost, prepend) {
+            const $topLevelContainer = $("<div>");
             const $postContainer = $("<div>", {id: "post_" + id, class: "post-container"});
-
-            let $deleteBtn = null;
-            let $editBtn = null;
-
-            if(deleteButton) {
-                $deleteBtn = $("<button>", {id: "deleteBtn_" + id, class: "btn post-btn"});
-                $deleteBtn.text("Delete");
-                $deleteBtn.on("click", id, deleteButtonCallback);
-            }
-
-            if(editButton) {
-                $editBtn = $("<button>", {id: "editBtn_" + id, class: "btn post-btn"});
-                $editBtn.text("Edit");
-                $editBtn.on("click", id, editButtonCallback);
-            }
+            $topLevelContainer.append($postContainer);
 
             const $postUsername = $("<p>", {class: "post-info"});
             $postUsername.text("User: " + username);
@@ -143,24 +129,35 @@
             const $postText = $("<p>", {id: "postText_" + id, class: "post-text"});
             $postText.text(text);
 
-            // Append the delete button only if the post was made by the authenticated user
-            if($deleteBtn) {
-                $postContainer.append($deleteBtn);
-            }
+            // Append delete and edit buttons if necessary
+            if(userOwnsPost) {
+                const $editable = buildEditablePostWidget(id, text, $postContainer);
+                $topLevelContainer.append($editable);
 
-            if($editBtn) {
+                const $deleteBtn = $("<button>", {id: "deleteBtn_" + id, class: "btn post-btn"});
+                $deleteBtn.text("Delete");
+                $deleteBtn.on("click", id, deleteButtonCallback);
+
+                const $editBtn = $("<button>", {id: "editBtn_" + id, class: "btn post-btn"});
+                $editBtn.text("Edit");
+                $editBtn.on("click", (event) => {
+                    $editable.toggle();
+                    $postContainer.toggle();
+                });
+
+                $postContainer.append($deleteBtn);
                 $postContainer.append($editBtn);
             }
-            
+
             $postContainer.append($postUsername);
             $postContainer.append($postId);
             $postContainer.append($createdOn);
             $postContainer.append($postText);
 
             if(prepend) {
-                $("#postBoard").prepend($postContainer);
+                $("#postBoard").prepend($topLevelContainer);
             } else {
-                $("#postBoard").append($postContainer);
+                $("#postBoard").append($topLevelContainer);
             }
         }
 
@@ -177,9 +174,9 @@
                     }
 
                     data.posts.forEach((post) => {
-                        const userMadePost = post.user_id == data.userId;
+                        const userOwnsPost = post.user_id == data.userId;
                         addPost(post.id, post.username, post.created_on, post.text,
-                                userMadePost, userMadePost, false);
+                                userOwnsPost, false);
                     });
                 },
                 error: (err) => {
@@ -215,7 +212,7 @@
                     }
 
                     const post = data.post;
-                    addPost(post.id, data.username, post.created_on, post.text, true, true, true);
+                    addPost(post.id, data.username, post.created_on, post.text, true, true);
 
                     // Clear input. We also trigger the input event to update the chars
                     // left counter; otherwise it gets stuck at the last value, which is

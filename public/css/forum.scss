@@ -38,10 +38,19 @@ $textarea-height: 100px;
     }
 }
 
+.post-editable {
+    width: $post-width;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
 textarea {
-    margin-bottom: $margin-default;
     width: $textarea-width;
     height: $textarea-height;
+    margin-bottom: $margin-default;
+    margin-left: auto;
+    margin-right: auto;
     resize: none;
     border: $post-border-width $color-dark solid;
     border-radius: $post-border-radius;

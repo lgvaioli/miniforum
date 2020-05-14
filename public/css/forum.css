@@ -77,10 +77,19 @@ body form {
   margin-top: 10px;
 }
 
+.post-editable {
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
 textarea {
-  margin-bottom: 20px;
   width: 500px;
   height: 100px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
   resize: none;
   border: 5px #607914 solid;
   border-radius: 10px;
