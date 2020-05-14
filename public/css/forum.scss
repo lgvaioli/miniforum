@@ -1,12 +1,12 @@
 @import "sass_globals";
 
-$post-width: 70%;
+$post-width: 90vw;
 $post-padding: 15px;
 $post-border-width: 5px;
 $post-border-radius: 10px;
-$post-button-width: 50px;
-$textarea-width: 500px;
-$textarea-height: 100px;
+$post-button-width: 60px;
+$textarea-width: 90vw;
+$textarea-height: 20vh;
 
 .post-container {
     background-color: $color-lighter;

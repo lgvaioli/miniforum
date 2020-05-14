@@ -50,7 +50,7 @@ body form {
   color: black;
   border: 5px #607914 solid;
   border-radius: 10px;
-  width: 70%;
+  width: 90vw;
   padding: 15px;
   margin-bottom: 40px;
   margin-left: auto;
@@ -64,7 +64,7 @@ body form {
 
 .post-container .post-btn {
   float: right;
-  width: 50px;
+  width: 60px;
   margin-left: 10px;
 }
 
@@ -79,15 +79,15 @@ body form {
 }
 
 .post-editable {
-  width: 70%;
+  width: 90vw;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
 }
 
 textarea {
-  width: 500px;
-  height: 100px;
+  width: 90vw;
+  height: 20vh;
   margin-bottom: 20px;
   margin-left: auto;
   margin-right: auto;
