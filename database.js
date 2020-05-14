@@ -11,6 +11,7 @@ const _Database = {
     createUser: createUser,
     findPost: findPost,
     makePost: makePost,
+    editPost: editPost,
     getPosts: getPosts,
     deletePost: deletePost,
 };
@@ -182,6 +183,26 @@ function makePost(userId, text) {
     });
 }
 
+// Edits (UPDATEs) a post.
+// Returns a Promise which resolves to the edited post, or rejects with an error.
+function editPost(postId, text) {
+    return new Promise((resolve, reject) => {
+        const query = {
+            text: "UPDATE posts SET text = $1, created_on = NOW() WHERE id = $2 RETURNING *",
+            values: [text, postId],
+        };
+
+        client.query(query, (err, result) => {
+            if(err) {
+                reject("Could not UPDATE: " + err);
+                return;
+            }
+
+            resolve(result.rows[0]);
+        });
+    });
+}
+
 // Gets all the posts in created_on descending order.
 // Returns a Promise which resolves to an array of posts inner joined with users.username
 // on success, rejects with an error on failure.
@@ -189,7 +210,7 @@ function getPosts() {
     return new Promise((resolve, reject) => {
         const query = {
             text: "SELECT posts.*, users.username FROM posts INNER JOIN users ON " +
-            "posts.user_id = users.id ORDER BY posts.created_on DESC",
+            "posts.user_id = users.id ORDER BY posts.id DESC",
         };
 
         client.query(query, (err, result) => {

@@ -75,6 +75,7 @@ body form {
 
 .post-container .post-text {
   margin-top: 10px;
+  white-space: pre-wrap;
 }
 
 .post-editable {

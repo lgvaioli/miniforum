@@ -106,6 +106,39 @@ function setupRoutes(app, db) {
                 });
         });
 
+    app.route("/api/editPost")
+        .post(ensureAuthenticated, (req, res) => {
+            const postId = req.body.postId;
+            let editText = req.body.editText;
+
+            if(!isValidComment(editText)) {
+                res.json({error: "invalid post. Posts must be at most 255 characters " +
+                         "long and can't be all whitespace"});
+                return;
+            }
+
+            editText = editText.trim();
+
+            db.findPost(postId)
+                .then((post) => {
+                    if(post.user_id != req.user.id) {
+                        res.json({error: "you can't edit other users' posts!"});
+                        return;
+                    }
+
+                    db.editPost(postId, editText)
+                        .then((post) => {
+                            res.json(post);
+                        })
+                        .catch((err) => {
+                            res.json({error: err});
+                        });
+                })
+                .catch((err) => {
+                    res.json({error: err});
+                });
+        });
+
     app.route("/api/getPosts")
         .get(ensureAuthenticated, (req, res) => {
             console.log("User \"" + req.user.username + "\" is getting all posts");
