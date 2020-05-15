@@ -2,13 +2,15 @@
 
 require("dotenv").config();
 
-const { Client } = require("pg");
-const bcrypt     = require("bcrypt");
+const { Client }        = require("pg");
+const bcrypt            = require("bcrypt");
+const generatePassword  = require("password-generator");
 
 const _Database = {
     findUserById: findUserById,
     findUserByName: findUserByName,
     createUser: createUser,
+    resetPassword: resetPassword,
     findPost: findPost,
     makePost: makePost,
     editPost: editPost,
@@ -130,6 +132,45 @@ function createUser(username, email, password) {
                         resolve(result.rows[0]);
                     });
                 });
+            });
+    });
+}
+
+// Returns a Promise which resolves to a new password, or rejects with an error.
+function resetPassword(userId) {
+    return new Promise((resolve, reject) => {
+        findUserById(userId)
+            .then((user) => {
+                // Default settings: memorable, 10 letters. It's not the strongest password
+                // in the world, but it's fine for a temporary password which the user
+                // should change right away anyway.
+                const newPassword = generatePassword();
+
+                bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALTROUNDS), (err, hash) => {
+                    if(err) {
+                        reject(err);
+                        return;
+                    }
+
+                    // Update "password" (i.e. hash) in database
+                    const query = {
+                        text: "UPDATE users SET password = $1 WHERE id = $2",
+                        values: [hash, user.id],
+                    };
+
+                    client.query(query, (err, result) => {
+                        if(err) {
+                            reject(err);
+                            return;
+                        }
+
+                        // Query was successful, resolve promise to new password
+                        resolve(newPassword);
+                    });
+                });
+            })
+            .catch((err) => {
+                reject(err);
             });
     });
 }

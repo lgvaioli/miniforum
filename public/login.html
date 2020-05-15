@@ -29,5 +29,14 @@
             <button type="submit" class="btn">Create account</button>
         </div>
     </form>
+
+    <h2>Forgot your password? Recover it here!</h2>
+    <form id="recoveryForm" method="POST" action="/api/recovery">
+        <div class="formContainer">
+            <label>Username<input type="text" id="recoveryUsername" name="recoveryUsername"></label>
+            <label>Email<input type="text" id="recoveryEmail" name="recoveryEmail"></label>
+            <button type="submit" class="btn">Reset password</button>
+        </div>
+    </form>
 </body>
 </html>

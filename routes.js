@@ -6,6 +6,7 @@ const isValidUsername   = require("./validation.js").isValidUsername;
 const isValidEmail      = require("./validation.js").isValidEmail;
 const isValidPassword   = require("./validation.js").isValidPassword;
 const isValidComment    = require("./validation.js").isValidComment;
+const Emailer           = require("./emailer.js").Emailer;
 
 // Redirect URLs
 const LOGIN_FAILURE_REDIRECT_URL        = "/";
@@ -76,6 +77,49 @@ function setupRoutes(app, db) {
 
                         res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
                     });
+                })
+                .catch((err) => {
+                    res.json({error: err});
+                });
+        });
+
+    app.route("/api/recovery")
+        .post((req, res) => {
+            const username  = req.body.recoveryUsername;
+            const email     = req.body.recoveryEmail;
+
+            if(!isValidUsername(username)) {
+                res.json("invalid username");
+                return;
+            }
+
+            if(!isValidEmail(email)) {
+                res.json("invalid email");
+                return;
+            }
+
+            db.findUserByName(username)
+                .then((user) => {
+                    if(user.email != email) {
+                        res.json({error: "email doesn't match username"});
+                        return;
+                    }
+
+                    db.resetPassword(user.id)
+                        .then((newPassword) => {
+                            Emailer.sendNewPassword(user.email, newPassword)
+                                .then(() => {
+                                    res.json("An email with your new password has been sent. " +
+                                    "Don't forget to check your spam folder if you can't find " +
+                                    "it in your inbox!");
+                                })
+                                .catch((err) => {
+                                    res.json({error: err});
+                                });
+                        })
+                        .catch((err) => {
+                            res.json({error: err});
+                        })
                 })
                 .catch((err) => {
                     res.json({error: err});

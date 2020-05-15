@@ -8,6 +8,7 @@ const bodyParser            = require("body-parser");
 const initializeDatabase    = require("./database.js").initializeDatabase;
 const setupRoutes           = require("./routes.js").setupRoutes;
 const setupAuthentication   = require("./authentication.js").setupAuthentication;
+const setupEmailer          = require("./emailer.js").setupEmailer;
 
 initializeDatabase()
     .then((db) => {
@@ -21,9 +22,10 @@ initializeDatabase()
         // Static assets
         app.use(express.static(process.env.PUBLIC_DIR, {index: false}));
 
+        // Set up stuff
         setupAuthentication(app, db);
-
         setupRoutes(app, db);
+        setupEmailer();
 
         app.listen(process.env.PORT, (err) => {
             if(err) {
