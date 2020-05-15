@@ -100,7 +100,7 @@ function findUserByName(name) {
 // Creates a new user in the database.
 // Resolves to the newly created user on success, fails with an error on failure (or if  a user
 // with the same name already exists).
-function createUser(username, password) {
+function createUser(username, email, password) {
     return new Promise((resolve, reject) => {
         findUserByName(username)
             .then((user) => {
@@ -115,8 +115,8 @@ function createUser(username, password) {
                     }
 
                     const query = {
-                        text: "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
-                        values: [username, hash],
+                        text: "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
+                        values: [username, email, hash],
                     };
     
                     client.query(query, (err, result) => {

@@ -3,14 +3,15 @@
 require("dotenv").config();
 const passport          = require("passport");
 const isValidUsername   = require("./validation.js").isValidUsername;
+const isValidEmail      = require("./validation.js").isValidEmail;
 const isValidPassword   = require("./validation.js").isValidPassword;
 const isValidComment    = require("./validation.js").isValidComment;
 
 // Redirect URLs
-const LOGIN_FAILURE_REDIRECT_URL = "/";
-const NEW_ACCOUNT_SUCCESS_REDIRECT_URL = "/forum";
-const NEW_ACCOUNT_FAILURE_REDIRECT_URL = "/";
-const LOGOUT_REDIRECT_URL = "/"; 
+const LOGIN_FAILURE_REDIRECT_URL        = "/";
+const NEW_ACCOUNT_SUCCESS_REDIRECT_URL  = "/forum";
+const NEW_ACCOUNT_FAILURE_REDIRECT_URL  = "/";
+const LOGOUT_REDIRECT_URL               = "/"; 
 
 // Middleware which uses Passport's isAuthenticated to make sure a user is authenticated
 function ensureAuthenticated(req, res, next) {
@@ -41,13 +42,19 @@ function setupRoutes(app, db) {
 
     app.route("/api/newAccount")
         .post((req, res) => {
-            const username = req.body.accountUsername;
-            const password = req.body.accountPassword;
+            const username  = req.body.accountUsername;
+            const email     = req.body.accountEmail;
+            const password  = req.body.accountPassword;
 
             if(!isValidUsername(username)) {
                 res.json({error: "invalid username. Valid usernames are between 1 " +
                     "and 20 characters in length, and may only contain the following " +
                     "characters:  a-z, A-Z, 0-9, - (dash), and _ (underscore)"});
+                return;
+            }
+
+            if(!isValidEmail(email)) {
+                res.json({error: "invalid email"});
                 return;
             }
 
@@ -58,7 +65,7 @@ function setupRoutes(app, db) {
 
             console.log("Trying to create new user account \"" + username + "\"");
 
-            db.createUser(username, password)
+            db.createUser(username, email, password)
                 .then((user) => {
                     req.login(user, (err) => {
                         if(err) {
