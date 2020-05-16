@@ -45,6 +45,6 @@ function isValidComment(comment) {
 }
 
 exports.isValidUsername = isValidUsername;
-exports.isValidEmail    = isValidEmail
+exports.isValidEmail    = isValidEmail;
 exports.isValidPassword = isValidPassword;
 exports.isValidComment  = isValidComment;

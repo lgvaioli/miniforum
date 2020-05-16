@@ -90,7 +90,7 @@ function findUserByName(name) {
             const user = res.rows[0];
 
             if(!user) {
-                reject("user doesn't exist");
+                reject("User doesn't exist!");
                 return;
             }
 

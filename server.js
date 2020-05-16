@@ -22,6 +22,10 @@ initializeDatabase()
         // Static assets
         app.use(express.static(process.env.PUBLIC_DIR, {index: false}));
 
+        // Pug templates
+        app.set("views", process.env.VIEWS_DIR);
+        app.set("view engine", "pug");
+
         // Set up stuff
         setupAuthentication(app, db);
         setupRoutes(app, db);

@@ -10,6 +10,7 @@ const Emailer           = require("./emailer.js").Emailer;
 
 // Redirect URLs
 const LOGIN_FAILURE_REDIRECT_URL        = "/";
+const LOGIN_SUCCESS_REDIRECT_URL        = "/forum";
 const NEW_ACCOUNT_SUCCESS_REDIRECT_URL  = "/forum";
 const NEW_ACCOUNT_FAILURE_REDIRECT_URL  = "/";
 const LOGOUT_REDIRECT_URL               = "/"; 
@@ -31,9 +32,24 @@ function setupRoutes(app, db) {
         });
 
     app.route("/login")
-        .post(passport.authenticate("local", {failureRedirect: LOGIN_FAILURE_REDIRECT_URL}),
-             (req, res) => {
-            res.redirect("/forum");
+        .post((req, res, next) => {
+            passport.authenticate("local", (err, user, info) => {
+                if(err) {
+                    return res.render("error", {message: err});
+                }
+
+                if(!user) {
+                    return res.render("error", {message: "No login information!"});
+                }
+
+                req.login(user, (err) => {
+                    if(err) {
+                        return res.render("error", {message: err});
+                    }
+
+                    res.redirect(LOGIN_SUCCESS_REDIRECT_URL);
+                });
+            })(req, res, next);
         });
 
     app.route("/forum")
@@ -48,20 +64,15 @@ function setupRoutes(app, db) {
             const password  = req.body.accountPassword;
 
             if(!isValidUsername(username)) {
-                res.json({error: "invalid username. Valid usernames are between 1 " +
-                    "and 20 characters in length, and may only contain the following " +
-                    "characters:  a-z, A-Z, 0-9, - (dash), and _ (underscore)"});
-                return;
+                return res.render("error", {message: "Invalid username!"});
             }
 
             if(!isValidEmail(email)) {
-                res.json({error: "invalid email"});
-                return;
+                return res.render("error", {message: "Invalid email!"});
             }
 
             if(!isValidPassword(password)) {
-                res.json({error: "passwords must be at least 6 characters long"});
-                return;
+                return res.render("error", {message: "Passwords must be at least 6 characters long!"});
             }
 
             console.log("Trying to create new user account \"" + username + "\"");
@@ -71,15 +82,14 @@ function setupRoutes(app, db) {
                     req.login(user, (err) => {
                         if(err) {
                             console.log("Error logging new user \"" + username + "\": " + err);
-                            res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
-                            return;
+                            return res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
                         }
 
                         res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
                     });
                 })
                 .catch((err) => {
-                    res.json({error: err});
+                    res.render("error", {message: err});
                 });
         });
 
@@ -89,40 +99,38 @@ function setupRoutes(app, db) {
             const email     = req.body.recoveryEmail;
 
             if(!isValidUsername(username)) {
-                res.json("invalid username");
-                return;
+                return res.render("error", {message: "Invalid username!"});
             }
 
             if(!isValidEmail(email)) {
-                res.json("invalid email");
-                return;
+                return res.render("error", {message: "Invalid email!"});   
             }
 
             db.findUserByName(username)
                 .then((user) => {
                     if(user.email != email) {
-                        res.json({error: "email doesn't match username"});
-                        return;
+                        return res.render("error", {message: "Email doesn't match username!"});
                     }
 
                     db.resetPassword(user.id)
                         .then((newPassword) => {
                             Emailer.sendNewPassword(user.email, newPassword)
                                 .then(() => {
-                                    res.json("An email with your new password has been sent. " +
-                                    "Don't forget to check your spam folder if you can't find " +
-                                    "it in your inbox!");
+                                    const msg = "An email with your new password has been sent. " +
+                                                "Don't forget to check your spam folder if it isn't " +
+                                                "in your inbox!";
+                                    res.render("resetPassword", {message: msg});
                                 })
                                 .catch((err) => {
-                                    res.json({error: err});
+                                    res.render("error", {message: err});
                                 });
                         })
                         .catch((err) => {
-                            res.json({error: err});
+                            res.render("error", {message: err});
                         })
                 })
                 .catch((err) => {
-                    res.json({error: err});
+                    res.render("error", {message: err});
                 });
         });
 
@@ -132,8 +140,7 @@ function setupRoutes(app, db) {
             let userInput = req.body.userInput;
 
             if(!isValidComment(userInput)) {
-                res.json({error: "invalid post. Posts must be at most 255 characters " +
-                         "long and can't be all whitespace"});
+                res.json({error: "Invalid post!"});
                 return;
             }
 

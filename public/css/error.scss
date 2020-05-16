@@ -1,0 +1,17 @@
+@import "sass_globals";
+
+img {
+    display: block;
+    width: 200px;
+    border: 5px dashed $color-dark;
+    border-radius: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: $margin-default;
+}

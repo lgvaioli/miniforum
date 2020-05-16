@@ -45,7 +45,7 @@ function setupAuthentication(app, db) {
                         if(match) {
                             return done(null, user);
                         } else {
-                            return done("incorrect password", false);
+                            return done("Incorrect password!", false);
                         }
                     });
                 })
