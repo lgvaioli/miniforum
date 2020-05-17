@@ -74,8 +74,16 @@ body form {
 }
 
 .post-container .post-text {
-  margin-top: 10px;
+  margin-top: 25px;
   white-space: pre-wrap;
+}
+
+.post-container .post-userImage {
+  width: 50px;
+  border-radius: 50%;
+  border: 3px dashed #607914;
+  float: left;
+  margin-right: 20px;
 }
 
 .post-editable {

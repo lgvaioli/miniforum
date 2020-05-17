@@ -34,8 +34,16 @@ $textarea-height: 20vh;
     }
 
     .post-text {
-        margin-top: 10px;
+        margin-top: 25px;
         white-space: pre-wrap;
+    }
+
+    .post-userImage {
+        width: 50px;
+        border-radius: 50%;
+        border: 3px dashed $color-dark;
+        float: left;
+        margin-right: $margin-default;
     }
 }
 
