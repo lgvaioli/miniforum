@@ -106,7 +106,7 @@ function createUser(username, email, password) {
     return new Promise((resolve, reject) => {
         findUserByName(username)
             .then((user) => {
-                reject("user \"" + username + "\" already exists");
+                reject("User already exists!");
             })
             .catch((err) => {
                 // Create user account. We store a hash instead of the plaintext password.
@@ -193,7 +193,7 @@ function findPost(postId) {
             const post = result.rows[0];
 
             if(!post) {
-                reject("invalid post id");
+                reject("Invalid post id!");
                 return;
             }
 
