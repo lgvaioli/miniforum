@@ -5,12 +5,12 @@ require("dotenv").config();
 const express               = require("express");
 const app                   = express();
 const bodyParser            = require("body-parser");
-const initializeDatabase    = require("./database.js").initializeDatabase;
+const getDatabase           = require("./database.js").getDatabase;
 const setupRoutes           = require("./routes.js").setupRoutes;
 const setupAuthentication   = require("./authentication.js").setupAuthentication;
 const setupEmailer          = require("./emailer.js").setupEmailer;
 
-initializeDatabase()
+getDatabase()
     .then((db) => {
         // Body parser. Be careful with this! You gotta use the appropriate parser depending
         // on the kind of contentType you're sending with jQuery! I had trouble with this

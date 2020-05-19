@@ -6,7 +6,7 @@ const { Client }        = require("pg");
 const bcrypt            = require("bcrypt");
 const generatePassword  = require("password-generator");
 
-const _Database = {
+const _database = {
     findUserById: findUserById,
     findUserByName: findUserByName,
     createUser: createUser,
@@ -16,6 +16,8 @@ const _Database = {
     editPost: editPost,
     getPosts: getPosts,
     deletePost: deletePost,
+    clearPosts: clearPosts,
+    close: closeDatabase,
 };
 
 let client = null;
@@ -23,8 +25,13 @@ let client = null;
 // Initializes the database.
 // Returns a Promise which resolves to a database object on success, and rejects with
 // an error on failure.
-function initializeDatabase() {
+function getDatabase() {
     return new Promise((resolve, reject) => {
+        if(client) {
+            resolve(_database);
+            return;
+        }
+
         client = new Client({
             connectionString: process.env.DATABASE_URL,
             ssl: process.env.DATABASE_NO_SSL ? false : { rejectUnauthorized: false },
@@ -38,7 +45,7 @@ function initializeDatabase() {
 
             console.log("Connected successfully to database!");
 
-            resolve(_Database);
+            resolve(_database);
         });
     });
 }
@@ -286,4 +293,38 @@ function deletePost(postId) {
     });
 }
 
-exports.initializeDatabase = initializeDatabase;
+// Clears (deletes) all posts from the database. Returns a Promise which resolves to a success string on success,
+// or rejects with an error.
+function clearPosts() {
+    return new Promise((resolve, reject) => {
+        client.query("DELETE FROM posts", (err, result) => {
+            if(err) {
+                reject(err);
+                return;
+            }
+
+            resolve("cleared posts");
+        });
+    });
+}
+
+// Ends database client conenction.
+function closeDatabase() {
+    return new Promise((resolve, reject) => {
+        if(client) {
+            client.end((err) => {
+                if(err) {
+                    reject("Could not disconnect database client: " + err);
+                    return;
+                }
+    
+                client = null;
+                resolve("Successfully disconnected database client");
+            })
+        } else {
+            reject("Tried to disconnect uninitialized database client");
+        }
+    });
+}
+
+exports.getDatabase  = getDatabase;

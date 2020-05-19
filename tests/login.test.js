@@ -15,17 +15,15 @@ const faker     = require("faker");
 // just see that the test in question has timed out). Remove this one line of
 // code and try to await for a nonexistent selector with Puppeteer and you'll
 // see exactly what I mean.
-jest.setTimeout(60000);
+jest.setTimeout(parseInt(process.env.JEST_TIMEOUT));
 
 let browser;
 let page;
-const BASE_URL = "http://localhost:" + process.env.PORT;
+const BASE_URL = process.env.TEST_BASEURL_NOPORT + process.env.PORT;
 
 const routes = {
     loginUrl: BASE_URL,
 };
-
-
 
 describe("Login tests", () => {
     beforeAll(async () => {
