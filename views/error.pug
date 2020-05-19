@@ -5,7 +5,7 @@ head
     script(src="/jquery-3.5.0.js")
 body
     h1= "Uh-oh, there seems to be a problem..."
-    h2= message
+    h2(data-testid="errorMsg")= message
     img(src="/nooo.jpg")
     button(id="gobackBtn", class="btn") Go back
     script.

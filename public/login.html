@@ -14,9 +14,9 @@
     <h2>Login</h2>
     <form id="loginForm" method="POST" action="/login">
         <div class="formContainer">
-        <label>Username<input type="text" id="username" name="username"></label>
-        <label>Password<input type="password" id="password" name="password"></label>
-        <button type="submit" class="btn">Login</button>
+        <label>Username<input type="text" id="username" name="username" data-testid="loginUsername"></label>
+        <label>Password<input type="password" id="password" name="password" data-testid="loginPassword"></label>
+        <button type="submit" class="btn" data-testid="loginLoginBtn">Login</button>
         </div>
     </form>
 
