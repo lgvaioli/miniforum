@@ -1,5 +1,6 @@
 const _automaton = {
     login: automaton_login,
+    makePost: automaton_makePost,
 };
 
 // Logins a user with Puppeteer. Returns a Promise which resolves to a new Puppeteer
@@ -39,6 +40,26 @@ function automaton_login(browser, loginUrl, username, password) {
         } catch(err) {
             reject(err);
         }  
+    });
+}
+
+// Makes a post. Does not actually check that the post was made.
+function automaton_makePost(browser, loginUrl, username, password, postText) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const page = await automaton_login(browser, loginUrl, username, password);
+
+            // Make post
+            await page.waitForSelector('[data-testid="userInput"]');
+            await page.type('[data-testid="userInput"]', postText);
+            await page.waitForSelector('[data-testid="postMessageBtn"]');
+            await page.click('[data-testid="postMessageBtn"]');
+
+            // Everything went ok, resolve to page
+            resolve(page);
+        } catch(err) {
+            reject(err);
+        }
     });
 }
 

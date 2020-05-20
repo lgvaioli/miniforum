@@ -116,7 +116,8 @@
             $counterContainer.append($inputCounter);
             $counterContainer.append(" characters left");
 
-            const $textarea = $("<textarea>", {id: "editable_textarea_" + postId});
+            const $textarea = $("<textarea>", {id: "editable_textarea_" + postId,
+                                "data-testid": "editable_textarea_test"});
             $textarea.val(postText);
             $textarea.attr("maxlength", POST_MAXLENGTH);
             $textarea.on("input", (event) => {
@@ -133,7 +134,7 @@
                 $postContainer.toggle();
             });
 
-            const $postEditBtn = $("<button>", {class: "btn"});
+            const $postEditBtn = $("<button>", {class: "btn", "data-testid": "postEditBtn"});
             $postEditBtn.text("Post edit");
             $postEditBtn.on("click", postId, postEditButtonCallback);
 
@@ -166,7 +167,8 @@
             const createdOnStr = new Date(createdOn).toLocaleString("es-AR");
             $createdOn.text(createdOnStr);
 
-            const $postText = $("<p>", {id: "postText_" + id, class: "post-text"});
+            const $postText = $("<p>", {id: "postText_" + id, class: "post-text",
+                                "data-testid": "postText_test"});
             $postText.text(text);
 
             // Append delete and edit buttons if necessary
@@ -174,11 +176,13 @@
                 const $editable = buildEditablePostWidget(id, text, $postContainer);
                 $topLevelContainer.append($editable);
 
-                const $deleteBtn = $("<button>", {id: "deleteBtn_" + id, class: "btn post-btn"});
+                const $deleteBtn = $("<button>", {id: "deleteBtn_" + id, class: "btn post-btn",
+                                        "data-testid": "deleteBtn_test"});
                 $deleteBtn.text("Delete");
                 $deleteBtn.on("click", id, deleteButtonCallback);
 
-                const $editBtn = $("<button>", {id: "editBtn_" + id, class: "btn post-btn"});
+                const $editBtn = $("<button>", {id: "editBtn_" + id, class: "btn post-btn",
+                                    "data-testid": "editBtn_test"});
                 $editBtn.text("Edit");
                 $editBtn.on("click", (event) => {
                     $editable.toggle();
