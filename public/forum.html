@@ -25,11 +25,16 @@
     <script>
     "use strict";
 
-    const MAKE_POST_URL = window.location.protocol + "//" + window.location.host + "/api/makePost";
-    const EDIT_POST_URL = window.location.protocol + "//" + window.location.host + "/api/editPost";
-    const GET_POSTS_URL = window.location.protocol + "//" + window.location.host + "/api/getPosts";
-    const DELETE_POSTS_URL = window.location.protocol + "//" + window.location.host + "/api/deletePost";
-    const LOGOUT_URL = window.location.protocol + "//" + window.location.host + "/api/logout";
+    const BASE_URL = window.location.protocol + "//" + window.location.host;
+
+    const routes = {
+        makePost:   BASE_URL + "/api/makePost",
+        editPost:   BASE_URL + "/api/editPost",
+        getPosts:   BASE_URL + "/api/getPosts",
+        deletePost: BASE_URL + "/api/deletePost",
+        logout:     BASE_URL + "/api/logout",
+    };
+
     const POST_MAXLENGTH = 255;
 
     $(document).ready(function(){
@@ -39,7 +44,7 @@
             $.ajax({
                 type: "DELETE",
                 contentType: "application/json",
-                url: DELETE_POSTS_URL,
+                url: routes.deletePost,
                 data: JSON.stringify({postId: postId}),
                 dataType: 'json',
                 success: (serverResponse) => {
@@ -70,7 +75,7 @@
             $.ajax({
                 type: "POST",
                 contentType: "application/json",
-                url: EDIT_POST_URL,
+                url: routes.editPost,
                 data: JSON.stringify({postId: postId, editText: editText}),
                 dataType: 'json',
                 success: (data) => {
@@ -201,7 +206,7 @@
         function getPosts() {
             $.ajax({
                 type: "GET",
-                url: GET_POSTS_URL,
+                url: routes.getPosts,
                 dataType: "json",
                 success: (data) => {
                     if(data.error) {
@@ -237,7 +242,7 @@
             $.ajax({
                 type: "POST",
                 contentType: "application/json",
-                url: MAKE_POST_URL,
+                url: routes.makePost,
                 data: JSON.stringify({userInput: userInput}),
                 dataType: 'json',
                 success: (data) => {
@@ -274,7 +279,7 @@
         $("#logout-btn").on("click", (event) => {
             $.ajax({
                 type: "GET",
-                url: LOGOUT_URL,
+                url: routes.logout,
                 dataType: "json",
                 success: (data) => {
                     if(data.redirect) {
