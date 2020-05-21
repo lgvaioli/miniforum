@@ -1,0 +1,92 @@
+/* The following cade was copy-pasted from Materalize's source code. I had to do this because
+   Materalize's lack of use of a namespace mechanism (or something to that effect) results in
+   name clashing with my own CSS in some generic class names, like "btn". */
+
+// Media Query Ranges
+$small-screen-up: 601px !default;
+$medium-screen-up: 993px !default;
+$large-screen-up: 1201px !default;
+$small-screen: 600px !default;
+$medium-screen: 992px !default;
+$large-screen: 1200px !default;
+
+$medium-and-up: "only screen and (min-width : #{$small-screen-up})" !default;
+$large-and-up: "only screen and (min-width : #{$medium-screen-up})" !default;
+$extra-large-and-up: "only screen and (min-width : #{$large-screen-up})" !default;
+$small-and-down: "only screen and (max-width : #{$small-screen})" !default;
+$medium-and-down: "only screen and (max-width : #{$medium-screen})" !default;
+$medium-only: "only screen and (min-width : #{$small-screen-up}) and (max-width : #{$medium-screen})" !default;
+
+
+// 19. Toasts
+// ==========================================================================
+
+$toast-height: 48px !default;
+$toast-color: #323232 !default;
+$toast-text-color: #fff !default;
+$toast-action-color: #eeff41;
+
+.z-depth-1 {
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),
+                0 3px 1px -2px rgba(0,0,0,0.12),
+                0 1px 5px 0 rgba(0,0,0,0.2);
+}
+
+#toast-container {
+    display:block;
+    position: fixed;
+    z-index: 10000;
+  
+    @media #{$small-and-down} {
+      min-width: 100%;
+      bottom: 0%;
+    }
+    @media #{$medium-only} {
+      left: 5%;
+      bottom: 7%;
+      max-width: 90%;
+    }
+    @media #{$large-and-up} {
+      top: 10%;
+      right: 7%;
+      max-width: 86%;
+    }
+}
+  
+.toast {
+    @extend .z-depth-1;
+    border-radius: 2px;
+    top: 35px;
+    width: auto;
+    margin-top: 10px;
+    position: relative;
+    max-width:100%;
+    height: auto;
+    min-height: $toast-height;
+    line-height: 1.5em;
+    background-color: $toast-color;
+    padding: 10px 25px;
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: $toast-text-color;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+  
+    .toast-action {
+      color: $toast-action-color;
+      font-weight: 500;
+      margin-right: -25px;
+      margin-left: 3rem;
+    }
+  
+    &.rounded{
+      border-radius: 24px;
+    }
+  
+    @media #{$small-and-down} {
+      width: 100%;
+      border-radius: 0;
+    }
+}

@@ -5,6 +5,11 @@ $color-darker-plus: #303d00;
 $color-light: #B1CA65;
 $color-lighter: #DFF2A2;
 
+$color-toast-text: (whitesmoke !important);
+$color-toast-success: (#4BB543 !important);
+$color-toast-failure: (#F31431 !important);
+$toast-font-size: (1em !important);
+
 $margin-default: 20px;
 
 * {
@@ -51,4 +56,17 @@ body {
     &:focus {
         outline: thin dotted;
     }
+}
+
+.toast-generic {
+    font-size: $toast-font-size;
+    border-radius: (5px !important);
+}
+
+.toast-success {
+    background-color: $color-toast-success;
+}
+
+.toast-failure {
+    background-color: $color-toast-failure;
 }

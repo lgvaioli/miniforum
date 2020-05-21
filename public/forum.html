@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
     <link rel="icon" href="./favicon.ico">
     <script src="jquery-3.5.0.js"></script>
+    <link rel="stylesheet" href="./css/materialize_toast.css">
 </head>
 <body>
     <h1>Miniforum</h1>
@@ -22,6 +23,7 @@
     <h2>Posts</h2>
     <div id="postBoard"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
     "use strict";
 
@@ -37,7 +39,39 @@
 
     const POST_MAXLENGTH = 255;
 
+    const HIDE_ANIMATION_DURATION = 300;
+
     $(document).ready(function(){
+        // FIXME: we should really refactor this script because it's starting to get too big and
+        // messy.
+        const toastSettings = {
+            transitionDuration: 500,
+            displayLength: 2000,
+        };
+        
+        // Shows a toast applying the given CSS class.
+        function toastWithClass(html, toastClasses) {
+            M.toast({
+                    html: html,
+                    displayLength: toastSettings.displayLength,
+                    classes: toastClasses,
+                    inDuration: toastSettings.transitionDuration,
+                    outDuration: toastSettings.transitionDuration,
+                });
+        }
+
+        // Shows a "success" toast.
+        function toastSuccess(text) {
+            toastWithClass(`<span data-testid="toast-success">${text}</span>`,
+                            "toast-generic toast-success");
+        }
+
+        // Shows a "failure" toast.
+        function toastFailure(text) {
+            toastWithClass(`<span data-testid="toast-failure">${text}</span>`,
+                            "toast-generic toast-failure");
+        }
+
         function deleteButtonCallback(event) {
             const postId = event.data;
 
@@ -51,17 +85,22 @@
                     // FIXME: this is kinda ugly and we can probably fix it easily by just
                     // NOT returning a 200 (OK) code from the server when something is... not ok.
                     if(serverResponse.error) {
-                        alert(serverResponse.error);
+                        toastFailure(serverResponse.error);
                         return;
                     }
 
-                    alert(serverResponse);
+                    toastSuccess(serverResponse);
+
+                    // Hide and then remove from DOM
+                    $("#post_" + postId).hide(HIDE_ANIMATION_DURATION, () => {
+                        $(this).remove();
+                    });
 
                     // Delete (remove from DOM) post from postBoard
-                    $("#post_" + postId).remove();
+                    //$("#post_" + postId).remove();
                 },
                 error: (err) => {
-                    alert("Error: could not delete post. Check browser console for details");
+                    toastFailure("Error: Could not delete post. Check browser console for details");
                     console.log("Could not delete post: " + JSON.stringify(err));
                 }
             });
@@ -80,7 +119,7 @@
                 dataType: 'json',
                 success: (data) => {
                     if(data.error) {
-                        alert(data.error);
+                        toastFailure(data.error);
                         return;
                     }
 
@@ -98,9 +137,10 @@
                     $("#post_" + postId).toggle();
                     $("#editable_" + postId).toggle();
 
-                    alert("Successfully updated post #" + postId + "!");
+                    toastSuccess("Successfully updated post #" + postId + "!");
                 },
                 error: (err) => {
+                    toastFailure("Error: Could not edit post. Check browser console for details");
                     console.log("Error: " + JSON.stringify(err));
                 }
             });
@@ -214,7 +254,7 @@
                 dataType: "json",
                 success: (data) => {
                     if(data.error) {
-                        alert(JSON.stringify(data));
+                        toastFailure(JSON.stringify(data));
                         return;
                     }
 
@@ -225,7 +265,7 @@
                     });
                 },
                 error: (err) => {
-                    alert(JSON.stringify(err));
+                    toastFailure(JSON.stringify(err));
                 }
             });
         }
@@ -239,7 +279,7 @@
             const userInput = $("#userInput").val();
 
             if(userInput == "") {
-                alert("You can't post an empty message");
+                toastFailure("You can't post an empty message");
                 return;
             }
 
@@ -251,7 +291,7 @@
                 dataType: 'json',
                 success: (data) => {
                     if(data.error) {
-                        alert(data.error);
+                        toastFailure(data.error);
                         return;
                     }
 
@@ -291,7 +331,7 @@
                     }
                 },
                 error: (err) => {
-                    alert("Get error! " + JSON.stringify(err));
+                    toastFailure("Logout error: " + JSON.stringify(err));
                 }
             });
         });
