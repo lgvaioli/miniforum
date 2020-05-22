@@ -23,10 +23,10 @@
     <h2>Don't have an account? Create one here!</h2>
     <form id="accountForm" method="POST" action="/api/newAccount">
         <div class="formContainer">
-            <label>Username<input type="text" id="accountUsername" name="accountUsername"></label>
-            <label>Email<input type="text" id="accountEmail" name="accountEmail"></label>
-            <label>Password<input type="password" id="accountPassword" name="accountPassword"></label>
-            <button type="submit" class="btn">Create account</button>
+            <label>Username<input type="text" id="accountUsername" data-testid="accountUsername" name="accountUsername"></label>
+            <label>Email<input type="text" id="accountEmail" data-testid="accountEmail" name="accountEmail"></label>
+            <label>Password<input type="password" id="accountPassword" data-testid="accountPassword" name="accountPassword"></label>
+            <button type="submit" class="btn" data-testid="createAccountBtn">Create account</button>
         </div>
     </form>
 

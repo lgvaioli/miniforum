@@ -10,13 +10,9 @@ const _automaton = {
 // The parameters 'username' and 'password' can be null; if both of them are null,
 // the behavior is the same as if the user simply clicked the login button without
 // typing any login information.
-function automaton_login(browser, loginUrl, username, password) {
+function automaton_login(page, loginUrl, username, password) {
     return new Promise(async (resolve, reject) => {
-        let page;
-
         try {
-            page = await browser.newPage();
-
             await page.goto(loginUrl);
             
             // If username is set, wait for loginUsername and type username
@@ -46,10 +42,10 @@ function automaton_login(browser, loginUrl, username, password) {
 // Makes a post. Does not actually check that the post was made.
 // postText can be null, in which case the behavior is like just clicking the "Post message"
 // button without entering anything in the textarea.
-function automaton_makePost(browser, loginUrl, username, password, postText) {
+function automaton_makePost(page, loginUrl, username, password, postText) {
     return new Promise(async (resolve, reject) => {
         try {
-            const page = await automaton_login(browser, loginUrl, username, password);
+            page = await automaton_login(page, loginUrl, username, password);
 
             // If postText is set, type it into userInput
             if(postText) {

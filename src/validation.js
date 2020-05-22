@@ -1,19 +1,19 @@
 // Checks for a valid username with the following rules:
-//  - Only the characters [a-zA-Z], [0-9], _ (underscore) and - (dash) are allowed.
+//  - Only the characters [a-zA-Z], [0-9], _ (underscore), - (dash), and . (dot) are allowed.
 //  - Minimum length of 1 character.
 //  - Maximum length of 20 characters.
 // Returns true if the username is valid; false otherwise.
 function isValidUsername(username) {
-    const regexp = /^[a-zA-Z0-9\_\-]{1,20}$/;
+    const regexp = /^[a-zA-Z0-9\_\-\.]{1,20}$/;
     return regexp.test(username);
 }
 
-// Checks for a valid username with the follwoing rules:
+// Checks for a valid email with the following rules:
 // - Only the characters [a-zA-Z], [0-9], _ (underscore), - (dash), @ (at), and . (dot) are allowed.
 // - Minimum length of 10 characters.
 // - Maximum length of 255 characters.
 // - Contains at least one '@' character.
-// Returns true if the username is valid; false otherwise.
+// Returns true if the email is valid; false otherwise.
 function isValidEmail(email) {
     if(!email.includes("@")) {
         return false;
