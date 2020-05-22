@@ -56,14 +56,14 @@ describe("Login form tests", () => {
         await page.setDefaultTimeout(5000);
     });
     
-    test("tries to login with no username and no password", async () => {
+    test("logins with no username and no password", async () => {
         page = await automaton.login(page, routes.loginUrl, null, null);
 
         // Wait for error message
         await page.waitForSelector('[data-testid="errorMsg"]');
     });
 
-    test("tries to login with invalid username and no password", async () => {
+    test("logins with invalid username and no password", async () => {
         page = await automaton.login(page, routes.loginUrl, faker.internet.userName(),
                                     null);
 
@@ -71,7 +71,7 @@ describe("Login form tests", () => {
         await page.waitForSelector('[data-testid="errorMsg"]');
     });
     
-    test("tries to login with invalid username and invalid password", async () => {
+    test("logins with invalid username and invalid password", async () => {
         page = await automaton.login(page, routes.loginUrl, faker.internet.userName(),
                                     faker.internet.password());
 
@@ -79,14 +79,14 @@ describe("Login form tests", () => {
         await page.waitForSelector('[data-testid="errorMsg"]');
     });
     
-    test("tries to login with valid username and no password", async () => {
+    test("logins with valid username and no password", async () => {
         page = await automaton.login(page, routes.loginUrl, validUser.username, null);
 
         // Wait for error message
         await page.waitForSelector('[data-testid="errorMsg"]');
     });
     
-    test("tries to login with valid username and invalid password", async () => {
+    test("logins with valid username and invalid password", async () => {
         page = await automaton.login(page, routes.loginUrl, validUser.username,
                                     faker.internet.password());
 
@@ -116,7 +116,7 @@ describe("Login form tests", () => {
 });
 
 describe("New account form tests", () => {
-    test("tries to create new account with no input", async () => {
+    test("creates new account with no input", async () => {
         // Go to login page
         await page.goto(routes.loginUrl);
 
@@ -128,7 +128,7 @@ describe("New account form tests", () => {
         await page.waitForSelector('[data-testid="errorMsg"]');
     });
 
-    test("tries to create new account with existing username and wrong email/password", async () => {
+    test("creates new account with existing username and wrong email/password", async () => {
         // Go to login page
         await page.goto(routes.loginUrl);
 

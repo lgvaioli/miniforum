@@ -41,5 +41,26 @@ getDatabase()
         });
     })
     .catch((err) => {
+        // This is a critical failure which renders the entire site useless.
+        // Setup a route to catch all GET requests and render an error template.
+
         console.log(err);
+      
+        app.use(express.static(process.env.PUBLIC_DIR, {index: false}));
+        app.set("views", process.env.VIEWS_DIR);
+        app.set("view engine", "pug");
+
+        app.route("*")
+            .get((req, res) => {
+                return res.render("error", {message: "Critical failure: Could not connect to database"});
+            });
+
+        app.listen(process.env.PORT, (err) => {
+            if(err) {
+                console.log("Error while setting server to listen: " + err);
+                return;
+            }
+    
+            console.log("Server listening at port " + process.env.PORT + "...");
+        });
     });
