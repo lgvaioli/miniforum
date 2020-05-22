@@ -64,9 +64,11 @@ textarea {
     border: $post-border-width $color-dark solid;
     border-radius: $post-border-radius;
     padding: 10px;
+    outline: none;
+    transition: $transition-default;
 
     &:focus {
-        outline: thin dotted;
+        border: $post-border-width $color-darker solid;
     }
 }
 

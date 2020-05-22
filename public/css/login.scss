@@ -22,3 +22,15 @@
         margin-bottom: $margin-default;
     }
 }
+
+input {
+    padding: 5px;
+    transition: $transition-default;
+    outline: none;
+    border-radius: 10px;
+    border: 2px solid $color-dark;
+
+    &:focus {
+        border: 2px solid black;
+    }
+}

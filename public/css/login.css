@@ -31,10 +31,13 @@ body form {
   border: none;
   border-radius: 5px;
   margin-bottom: 20px;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
 }
 
 .btn:hover {
   background-color: #3D5100;
+  cursor: pointer;
 }
 
 .btn:active {
@@ -79,5 +82,18 @@ body form {
 
 .formContainer label {
   margin-bottom: 20px;
+}
+
+input {
+  padding: 5px;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
+  outline: none;
+  border-radius: 10px;
+  border: 2px solid #607914;
+}
+
+input:focus {
+  border: 2px solid black;
 }
 /*# sourceMappingURL=login.css.map */

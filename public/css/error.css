@@ -31,10 +31,13 @@ body form {
   border: none;
   border-radius: 5px;
   margin-bottom: 20px;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
 }
 
 .btn:hover {
   background-color: #3D5100;
+  cursor: pointer;
 }
 
 .btn:active {

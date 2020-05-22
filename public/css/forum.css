@@ -31,10 +31,13 @@ body form {
   border: none;
   border-radius: 5px;
   margin-bottom: 20px;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
 }
 
 .btn:hover {
   background-color: #3D5100;
+  cursor: pointer;
 }
 
 .btn:active {
@@ -116,10 +119,13 @@ textarea {
   border: 5px #607914 solid;
   border-radius: 10px;
   padding: 10px;
+  outline: none;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
 }
 
 textarea:focus {
-  outline: thin dotted;
+  border: 5px #3D5100 solid;
 }
 
 .counter-container {

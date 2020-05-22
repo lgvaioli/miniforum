@@ -11,6 +11,7 @@ $color-toast-failure: (#F31431 !important);
 $toast-font-size: (1em !important);
 
 $margin-default: 20px;
+$transition-default: 0.5s;
 
 * {
     margin: 0;
@@ -44,9 +45,11 @@ body {
     border: none;
     border-radius: 5px;
     margin-bottom: $margin-default;
+    transition: $transition-default;
 
     &:hover {
         background-color: $color-darker;
+        cursor: pointer;
     }
 
     &:active {
