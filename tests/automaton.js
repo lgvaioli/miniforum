@@ -44,14 +44,19 @@ function automaton_login(browser, loginUrl, username, password) {
 }
 
 // Makes a post. Does not actually check that the post was made.
+// postText can be null, in which case the behavior is like just clicking the "Post message"
+// button without entering anything in the textarea.
 function automaton_makePost(browser, loginUrl, username, password, postText) {
     return new Promise(async (resolve, reject) => {
         try {
             const page = await automaton_login(browser, loginUrl, username, password);
 
-            // Make post
-            await page.waitForSelector('[data-testid="userInput"]');
-            await page.type('[data-testid="userInput"]', postText);
+            // If postText is set, type it into userInput
+            if(postText) {
+                await page.waitForSelector('[data-testid="userInput"]');
+                await page.type('[data-testid="userInput"]', postText);
+            }
+            
             await page.waitForSelector('[data-testid="postMessageBtn"]');
             await page.click('[data-testid="postMessageBtn"]');
 

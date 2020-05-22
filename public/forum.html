@@ -192,7 +192,8 @@
         // If userOwnsPost is true, "Edit" and "Delete" buttons are added.
         function addPost(id, username, createdOn, text, userOwnsPost, prepend) {
             const $topLevelContainer = $("<div>");
-            const $postContainer = $("<div>", {id: "post_" + id, class: "post-container"});
+            const $postContainer = $("<div>", {id: "post_" + id, "data-testid": "postContainer_test",
+                class: "post-container"});
             $topLevelContainer.append($postContainer);
 
             const $userImage = $("<img>", {src: "/user.jpg", class: "post-userImage"});
