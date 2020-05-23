@@ -19,8 +19,8 @@ const routes = {
 };
 
 const validUser = {
-    username: process.env.TEST_VALID_USERNAME,
-    password: process.env.TEST_VALID_PASSWORD,
+    username: process.env.TEST_USERNAME,
+    password: process.env.TEST_PASSWORD,
 };
 
 describe("Login form tests", () => {
@@ -36,6 +36,11 @@ describe("Login form tests", () => {
         // will need a higher slowMo.
         // At the end of the day, the sad truth is that Puppeteer is just flaky.
         // Abandon all hope, ye who enter here.
+        let runHeadless = true;
+
+        if(process.env.PUPPETEER_BROWSER && process.env.PUPPETEER_BROWSER == "true") {
+            runHeadless = false;
+        }
 
         const debugConfig = {
             headless: false,
@@ -47,7 +52,7 @@ describe("Login form tests", () => {
             slowMo: parseInt(process.env.PUPPETEER_HEADLESS_SLOWMO),
         };
 
-        browser = await puppeteer.launch(process.env.DEBUG ? debugConfig : headlessConfig);
+        browser = await puppeteer.launch(runHeadless ? headlessConfig : debugConfig);
         
         page = await browser.newPage();
 

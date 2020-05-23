@@ -32,9 +32,15 @@ function getDatabase() {
             return;
         }
 
+        let noSsl = false;
+
+        if(process.env.DATABASE_NO_SSL && process.env.DATABASE_NO_SSL == "true") {
+            noSsl = true;
+        }
+
         client = new Client({
             connectionString: process.env.DATABASE_URL,
-            ssl: process.env.DATABASE_NO_SSL ? false : { rejectUnauthorized: false },
+            ssl: noSsl ? false : { rejectUnauthorized: false },
         });
 
         client.connect((err) => {
