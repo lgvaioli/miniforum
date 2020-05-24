@@ -62,7 +62,7 @@ VIEWS_DIR=views
 # Database to connect to. Please read PostgreSQL's docs to find out more about this.
 DATABASE_URL=postgresql://<postgres_user>:<postgres_password>@<host>:<port>/<database_name>
 
-# This is necessary to connect to a PostgreSQL's in localhost. This line should be set to
+# This is necessary to connect to a PostgreSQL's database in localhost. This line should be set to
 # true when deploying to localhost, and false when deploying to Heroku.
 DATABASE_NO_SSL=true
 

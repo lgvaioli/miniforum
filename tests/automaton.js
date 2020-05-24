@@ -1,6 +1,9 @@
-const _automaton = {
-    login: automaton_login,
-    makePost: automaton_makePost,
+// FIXME: Implement this as a ES6 class
+const automaton = {
+  // eslint-disable-next-line no-use-before-define
+  login: automatonLogin,
+  // eslint-disable-next-line no-use-before-define
+  makePost: automatonMakePost,
 };
 
 // Logins a user with Puppeteer. Returns a Promise which resolves to a new Puppeteer
@@ -10,58 +13,46 @@ const _automaton = {
 // The parameters 'username' and 'password' can be null; if both of them are null,
 // the behavior is the same as if the user simply clicked the login button without
 // typing any login information.
-function automaton_login(page, loginUrl, username, password) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            await page.goto(loginUrl);
-            
-            // If username is set, wait for loginUsername and type username
-            if(username) {
-                await page.waitForSelector('[data-testid="loginUsername"]');
-                await page.type('[data-testid="loginUsername"]', username);
-            }
+async function automatonLogin(page, loginUrl, username, password) {
+  await page.goto(loginUrl);
 
-            // If password is set, wait for loginPassword and type password
-            if(password) {
-                await page.waitForSelector('[data-testid="loginPassword"]');
-                await page.type('[data-testid="loginPassword"]', password);
-            }
-            
-            // Wait for login button and click it
-            await page.waitForSelector('[data-testid="loginLoginBtn"]');
-            await page.click('[data-testid="loginLoginBtn"]');
+  // If username is set, wait for loginUsername and type username
+  if (username) {
+    await page.waitForSelector('[data-testid="loginUsername"]');
+    await page.type('[data-testid="loginUsername"]', username);
+  }
 
-            // Everything worked, resolve to the page
-            resolve(page);
-        } catch(err) {
-            reject(err);
-        }  
-    });
+  // If password is set, wait for loginPassword and type password
+  if (password) {
+    await page.waitForSelector('[data-testid="loginPassword"]');
+    await page.type('[data-testid="loginPassword"]', password);
+  }
+
+  // Wait for login button and click it
+  await page.waitForSelector('[data-testid="loginLoginBtn"]');
+  await page.click('[data-testid="loginLoginBtn"]');
+
+  // Everything worked, resolve to the page
+  return page;
 }
 
 // Makes a post. Does not actually check that the post was made.
 // postText can be null, in which case the behavior is like just clicking the "Post message"
 // button without entering anything in the textarea.
-function automaton_makePost(page, loginUrl, username, password, postText) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            page = await automaton_login(page, loginUrl, username, password);
+async function automatonMakePost(page, loginUrl, username, password, postText) {
+  const loggedInPage = await automatonLogin(page, loginUrl, username, password);
 
-            // If postText is set, type it into userInput
-            if(postText) {
-                await page.waitForSelector('[data-testid="userInput"]');
-                await page.type('[data-testid="userInput"]', postText);
-            }
-            
-            await page.waitForSelector('[data-testid="postMessageBtn"]');
-            await page.click('[data-testid="postMessageBtn"]');
+  // If postText is set, type it into userInput
+  if (postText) {
+    await loggedInPage.waitForSelector('[data-testid="userInput"]');
+    await loggedInPage.type('[data-testid="userInput"]', postText);
+  }
 
-            // Everything went ok, resolve to page
-            resolve(page);
-        } catch(err) {
-            reject(err);
-        }
-    });
+  await loggedInPage.waitForSelector('[data-testid="postMessageBtn"]');
+  await loggedInPage.click('[data-testid="postMessageBtn"]');
+
+  // Everything went ok, resolve to page
+  return loggedInPage;
 }
 
-exports.automaton = _automaton;
+exports.automaton = automaton;

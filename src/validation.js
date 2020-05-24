@@ -4,8 +4,8 @@
 //  - Maximum length of 20 characters.
 // Returns true if the username is valid; false otherwise.
 function isValidUsername(username) {
-    const regexp = /^[a-zA-Z0-9\_\-\.]{1,20}$/;
-    return regexp.test(username);
+  const regexp = /^[a-zA-Z0-9_\-.]{1,20}$/;
+  return regexp.test(username);
 }
 
 // Checks for a valid email with the following rules:
@@ -15,19 +15,19 @@ function isValidUsername(username) {
 // - Contains at least one '@' character.
 // Returns true if the email is valid; false otherwise.
 function isValidEmail(email) {
-    if(!email.includes("@")) {
-        return false;
-    }
+  if (!email.includes('@')) {
+    return false;
+  }
 
-    const regexp = /^[a-zA-Z0-9\_\-@\.]{10,255}$/;
-    return regexp.test(email);
+  const regexp = /^[a-zA-Z0-9_\-@.]{10,255}$/;
+  return regexp.test(email);
 }
 
 // Checks for a valid password with the following rules:
 //  - Password must be at least 6 characters long.
 // Returns true if the password is valid; false otherwise.
 function isValidPassword(password) {
-    return password.length >= 6;
+  return password.length >= 6;
 }
 
 // Checks for a valid comment with the following rules:
@@ -35,16 +35,16 @@ function isValidPassword(password) {
 //  - Comment must be at most 255 characters long.
 // Returns true if the comment is valid; false otherwise.
 function isValidComment(comment) {
-    if(comment.length > 255) {
-        return false;
-    }
+  if (comment.length > 255) {
+    return false;
+  }
 
-    noWhitespace = comment.replace(/\s/g, "");
+  const noWhitespace = comment.replace(/\s/g, '');
 
-    return noWhitespace.length > 0;
+  return noWhitespace.length > 0;
 }
 
 exports.isValidUsername = isValidUsername;
-exports.isValidEmail    = isValidEmail;
+exports.isValidEmail = isValidEmail;
 exports.isValidPassword = isValidPassword;
-exports.isValidComment  = isValidComment;
+exports.isValidComment = isValidComment;

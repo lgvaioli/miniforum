@@ -1,23 +1,35 @@
-"use strict";
+/* eslint-disable prefer-promise-reject-errors */
 
-require("dotenv").config();
+require('dotenv').config();
 
-const { Client }        = require("pg");
-const bcrypt            = require("bcrypt");
-const generatePassword  = require("password-generator");
+const { Client } = require('pg');
+const bcrypt = require('bcrypt');
+const generatePassword = require('password-generator');
 
-const _database = {
-    findUserById: findUserById,
-    findUserByName: findUserByName,
-    createUser: createUser,
-    resetPassword: resetPassword,
-    findPost: findPost,
-    makePost: makePost,
-    editPost: editPost,
-    getPosts: getPosts,
-    deletePost: deletePost,
-    clearPosts: clearPosts,
-    close: closeDatabase,
+// FIXME: I will refactor this entire module into a ES6 class later
+const database = {
+  // eslint-disable-next-line no-use-before-define
+  findUserById,
+  // eslint-disable-next-line no-use-before-define
+  findUserByName,
+  // eslint-disable-next-line no-use-before-define
+  createUser,
+  // eslint-disable-next-line no-use-before-define
+  resetPassword,
+  // eslint-disable-next-line no-use-before-define
+  findPost,
+  // eslint-disable-next-line no-use-before-define
+  makePost,
+  // eslint-disable-next-line no-use-before-define
+  editPost,
+  // eslint-disable-next-line no-use-before-define
+  getPosts,
+  // eslint-disable-next-line no-use-before-define
+  deletePost,
+  // eslint-disable-next-line no-use-before-define
+  clearPosts,
+  // eslint-disable-next-line no-use-before-define
+  close: closeDatabase,
 };
 
 let client = null;
@@ -26,193 +38,193 @@ let client = null;
 // Returns a Promise which resolves to a database object on success, and rejects with
 // an error on failure.
 function getDatabase() {
-    return new Promise((resolve, reject) => {
-        if(client) {
-            resolve(_database);
-            return;
-        }
+  return new Promise((resolve, reject) => {
+    if (client) {
+      resolve(database);
+      return;
+    }
 
-        let noSsl = false;
+    let noSsl = false;
 
-        if(process.env.DATABASE_NO_SSL && process.env.DATABASE_NO_SSL == "true") {
-            noSsl = true;
-        }
+    if (process.env.DATABASE_NO_SSL && process.env.DATABASE_NO_SSL === 'true') {
+      noSsl = true;
+    }
 
-        client = new Client({
-            connectionString: process.env.DATABASE_URL,
-            ssl: noSsl ? false : { rejectUnauthorized: false },
-        });
-
-        client.connect((err) => {
-            if(err) {
-                reject("Could not connect to database: " + err);
-                return;
-            }
-
-            console.log("Connected successfully to database!");
-
-            resolve(_database);
-        });
+    client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: noSsl ? false : { rejectUnauthorized: false },
     });
+
+    client.connect((err) => {
+      if (err) {
+        reject(`Could not connect to database: ${err}`);
+        return;
+      }
+
+      console.log('Connected successfully to database!');
+
+      resolve(database);
+    });
+  });
 }
 
 // Finds a user in the database by id.
 // Returns a Promise which resolves to the user if it exists, or rejects with an error
 // if it doesn't.
 function findUserById(id) {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "SELECT * FROM users WHERE id = $1",
-            values: [id],
-        };
-    
-        client.query(query, (err, res) => {
-            if(err) {
-                reject("Error while looking up user in database: " + err);
-                return;
-            }
-    
-            const user = res.rows[0];
-    
-            if(!user) {
-                reject("user #" + id + " doesn't exist");
-                return;
-            }
-    
-            resolve(user);
-        });
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'SELECT * FROM users WHERE id = $1',
+      values: [id],
+    };
+
+    client.query(query, (err, res) => {
+      if (err) {
+        reject(`Error while looking up user in database: ${err}`);
+        return;
+      }
+
+      const user = res.rows[0];
+
+      if (!user) {
+        reject(`user #${id} doesn't exist`);
+        return;
+      }
+
+      resolve(user);
     });
+  });
 }
 
 // Finds a user in the database by name.
 // Returns a Promise which resolves to the user if it exists, or rejects with an error
 // if it doesn't.
 function findUserByName(name) {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "SELECT * FROM users WHERE username = $1",
-            values: [name]
-        };
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'SELECT * FROM users WHERE username = $1',
+      values: [name],
+    };
 
-        client.query(query, (err, res) => {
-            if(err) {
-                reject(err);
-                return;
-            }
+    client.query(query, (err, res) => {
+      if (err) {
+        reject(err);
+        return;
+      }
 
-            const user = res.rows[0];
+      const user = res.rows[0];
 
-            if(!user) {
-                reject("User doesn't exist!");
-                return;
-            }
+      if (!user) {
+        reject("User doesn't exist!");
+        return;
+      }
 
-            resolve(user);
-        });
+      resolve(user);
     });
+  });
 }
 
 // Creates a new user in the database.
 // Resolves to the newly created user on success, fails with an error on failure (or if  a user
 // with the same name already exists).
 function createUser(username, email, password) {
-    return new Promise((resolve, reject) => {
-        findUserByName(username)
-            .then((user) => {
-                reject("User already exists!");
-            })
-            .catch((err) => {
-                // Create user account. We store a hash instead of the plaintext password.
-                bcrypt.hash(password, parseInt(process.env.BCRYPT_SALTROUNDS), (err, hash) => {
-                    if(err) {
-                        reject(err);
-                        return;
-                    }
+  return new Promise((resolve, reject) => {
+    findUserByName(username)
+      .then(() => {
+        reject('User already exists!');
+      })
+      .catch(() => {
+        // Create user account. We store a hash instead of the plaintext password.
+        bcrypt.hash(password, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-                    const query = {
-                        text: "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *",
-                        values: [username, email, hash],
-                    };
-    
-                    client.query(query, (err, result) => {
-                        if(err) {
-                            reject(err);
-                            return;
-                        }
+          const query = {
+            text: 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
+            values: [username, email, hash],
+          };
 
-                        // If we're here the new account was successfuly created. We resolve
-                        // with the newly created user.
-                        resolve(result.rows[0]);
-                    });
-                });
-            });
-    });
+          client.query(query, (dbErr, result) => {
+            if (dbErr) {
+              reject(dbErr);
+              return;
+            }
+
+            // If we're here the new account was successfuly created. We resolve
+            // with the newly created user.
+            resolve(result.rows[0]);
+          });
+        });
+      });
+  });
 }
 
 // Returns a Promise which resolves to a new password, or rejects with an error.
 function resetPassword(userId) {
-    return new Promise((resolve, reject) => {
-        findUserById(userId)
-            .then((user) => {
-                // Default settings: memorable, 10 letters. It's not the strongest password
-                // in the world, but it's fine for a temporary password which the user
-                // should change right away anyway.
-                const newPassword = generatePassword();
+  return new Promise((resolve, reject) => {
+    findUserById(userId)
+      .then((user) => {
+        // Default settings: memorable, 10 letters. It's not the strongest password
+        // in the world, but it's fine for a temporary password which the user
+        // should change right away anyway.
+        const newPassword = generatePassword();
 
-                bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALTROUNDS), (err, hash) => {
-                    if(err) {
-                        reject(err);
-                        return;
-                    }
+        bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-                    // Update "password" (i.e. hash) in database
-                    const query = {
-                        text: "UPDATE users SET password = $1 WHERE id = $2",
-                        values: [hash, user.id],
-                    };
+          // Update "password" (i.e. hash) in database
+          const query = {
+            text: 'UPDATE users SET password = $1 WHERE id = $2',
+            values: [hash, user.id],
+          };
 
-                    client.query(query, (err, result) => {
-                        if(err) {
-                            reject(err);
-                            return;
-                        }
+          client.query(query, (dbErr) => {
+            if (dbErr) {
+              reject(dbErr);
+              return;
+            }
 
-                        // Query was successful, resolve promise to new password
-                        resolve(newPassword);
-                    });
-                });
-            })
-            .catch((err) => {
-                reject(err);
-            });
-    });
+            // Query was successful, resolve promise to new password
+            resolve(newPassword);
+          });
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
 }
 
 // Finds a post. Returns a Promise which resolves to the post if found, otherwise rejects
 // with an error.
 function findPost(postId) {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "SELECT * FROM posts WHERE id = $1",
-            values: [postId],
-        };
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'SELECT * FROM posts WHERE id = $1',
+      values: [postId],
+    };
 
-        client.query(query, (err, result) => {
-            if(err) {
-                reject(err);
-                return;
-            }
+    client.query(query, (err, result) => {
+      if (err) {
+        reject(err);
+        return;
+      }
 
-            const post = result.rows[0];
+      const post = result.rows[0];
 
-            if(!post) {
-                reject("Invalid post id!");
-                return;
-            }
+      if (!post) {
+        reject('Invalid post id!');
+        return;
+      }
 
-            resolve(post);
-        });
+      resolve(post);
     });
+  });
 }
 
 // Makes a post. Takes the userId and the text of the post.
@@ -220,117 +232,117 @@ function findPost(postId) {
 // row consisting of id, text, created_on, and user_id) if successful, or rejects
 // with an error on failure.
 function makePost(userId, text) {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "INSERT INTO posts (user_id, text) VALUES ($1, $2) RETURNING *",
-            values: [userId, text]
-        };
-    
-        client.query(query, (err, result) => {
-            if(err) {
-                reject("Could not INSERT INTO: " + err);
-                return;
-            }
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'INSERT INTO posts (user_id, text) VALUES ($1, $2) RETURNING *',
+      values: [userId, text],
+    };
 
-            resolve(result.rows[0]);
-        });
+    client.query(query, (err, result) => {
+      if (err) {
+        reject(`Could not INSERT INTO: ${err}`);
+        return;
+      }
+
+      resolve(result.rows[0]);
     });
+  });
 }
 
 // Edits (UPDATEs) a post.
 // Returns a Promise which resolves to the edited post, or rejects with an error.
 function editPost(postId, text) {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "UPDATE posts SET text = $1, created_on = NOW() WHERE id = $2 RETURNING *",
-            values: [text, postId],
-        };
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'UPDATE posts SET text = $1, created_on = NOW() WHERE id = $2 RETURNING *',
+      values: [text, postId],
+    };
 
-        client.query(query, (err, result) => {
-            if(err) {
-                reject("Could not UPDATE: " + err);
-                return;
-            }
+    client.query(query, (err, result) => {
+      if (err) {
+        reject(`Could not UPDATE: ${err}`);
+        return;
+      }
 
-            resolve(result.rows[0]);
-        });
+      resolve(result.rows[0]);
     });
+  });
 }
 
 // Gets all the posts in created_on descending order.
 // Returns a Promise which resolves to an array of posts inner joined with users.username
 // on success, rejects with an error on failure.
 function getPosts() {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "SELECT posts.*, users.username FROM posts INNER JOIN users ON " +
-            "posts.user_id = users.id ORDER BY posts.id DESC",
-        };
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'SELECT posts.*, users.username FROM posts INNER JOIN users ON '
+            + 'posts.user_id = users.id ORDER BY posts.id DESC',
+    };
 
-        client.query(query, (err, result) => {
-            if(err) {
-                console.log("Error: " + err);
-                reject(err);
-                return;
-            }
+    client.query(query, (err, result) => {
+      if (err) {
+        console.log(`Error: ${err}`);
+        reject(err);
+        return;
+      }
 
-            resolve(result.rows);
-        });
+      resolve(result.rows);
     });
+  });
 }
 
 // Deletes a post. Returns a Promise which resolves to a success string if successful, or
 // rejects with an error.
 function deletePost(postId) {
-    return new Promise((resolve, reject) => {
-        const query = {
-            text: "DELETE FROM posts WHERE id = $1",
-            values: [postId],
-        };
+  return new Promise((resolve, reject) => {
+    const query = {
+      text: 'DELETE FROM posts WHERE id = $1',
+      values: [postId],
+    };
 
-        client.query(query, (err, result) => {
-            if(err) {
-                reject("Could not DELETE post #" + postId + ": " + err);
-                return;
-            }
+    client.query(query, (err) => {
+      if (err) {
+        reject(`Could not DELETE post #${postId}: ${err}`);
+        return;
+      }
 
-            resolve("Deleted post #" + postId);
-        });
+      resolve(`Deleted post #${postId}`);
     });
+  });
 }
 
-// Clears (deletes) all posts from the database. Returns a Promise which resolves to a success string on success,
-// or rejects with an error.
+// Clears (deletes) all posts from the database. Returns a Promise which resolves to a
+// success string on success, or rejects with an error.
 function clearPosts() {
-    return new Promise((resolve, reject) => {
-        client.query("DELETE FROM posts", (err, result) => {
-            if(err) {
-                reject(err);
-                return;
-            }
+  return new Promise((resolve, reject) => {
+    client.query('DELETE FROM posts', (err) => {
+      if (err) {
+        reject(err);
+        return;
+      }
 
-            resolve("cleared posts");
-        });
+      resolve('cleared posts');
     });
+  });
 }
 
 // Ends database client conenction.
 function closeDatabase() {
-    return new Promise((resolve, reject) => {
-        if(client) {
-            client.end((err) => {
-                if(err) {
-                    reject("Could not disconnect database client: " + err);
-                    return;
-                }
-    
-                client = null;
-                resolve("Successfully disconnected database client");
-            })
-        } else {
-            reject("Tried to disconnect uninitialized database client");
+  return new Promise((resolve, reject) => {
+    if (client) {
+      client.end((err) => {
+        if (err) {
+          reject(`Could not disconnect database client: ${err}`);
+          return;
         }
-    });
+
+        client = null;
+        resolve('Successfully disconnected database client');
+      });
+    } else {
+      reject('Tried to disconnect uninitialized database client');
+    }
+  });
 }
 
-exports.getDatabase  = getDatabase;
+exports.getDatabase = getDatabase;
