@@ -9,8 +9,6 @@ const routes = {
   logout: `${BASE_URL}/api/logout`,
 };
 
-const POST_MAXLENGTH = 255;
-
 const HIDE_ANIMATION_DURATION = 300;
 
 $(document).ready(() => {
@@ -103,13 +101,13 @@ $(document).ready(() => {
       'data-testid': 'editable_textarea_test',
     });
     $textarea.val(postText);
-    $textarea.attr('maxlength', POST_MAXLENGTH);
+    $textarea.attr('maxlength', SHARED_GLOBALS.POST_MAXLENGTH);
     $textarea.on('input', () => {
-      const charsLeft = POST_MAXLENGTH - $textarea.val().length;
+      const charsLeft = SHARED_GLOBALS.POST_MAXLENGTH - $textarea.val().length;
       $inputCounter.text(charsLeft);
     });
 
-    $inputCounter.text(POST_MAXLENGTH - $textarea.val().length);
+    $inputCounter.text(SHARED_GLOBALS.POST_MAXLENGTH - $textarea.val().length);
 
     const $cancelBtn = $('<button>', { class: 'btn cancel-btn' });
     $cancelBtn.text('Cancel');
@@ -272,9 +270,9 @@ $(document).ready(() => {
 
   // User input counter
   $('#userInput')
-    .attr('maxlength', POST_MAXLENGTH)
+    .attr('maxlength', SHARED_GLOBALS.POST_MAXLENGTH)
     .on('input', () => {
-      const charsLeft = POST_MAXLENGTH - $('#userInput').val().length;
+      const charsLeft = SHARED_GLOBALS.POST_MAXLENGTH - $('#userInput').val().length;
       $('#input-counter').text(charsLeft);
     });
 

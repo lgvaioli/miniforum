@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const faker = require('faker');
 const { automaton } = require('./automaton');
 const { getDatabase } = require('../src/database');
+const { POST_MAXLENGTH } = require('../public/shared_globals').SHARED_GLOBALS;
 
 jest.setTimeout(parseInt(process.env.JEST_TIMEOUT, 10));
 
@@ -178,6 +179,169 @@ describe('New account form tests', () => {
     // Wait for logout button; we'll take that as a sign that we successfully created
     // the account
     await page.waitForSelector('[data-testid="logoutBtn"]');
+  });
+});
+
+describe('Reset password form tests', () => {
+  test('resets password with no input', async () => {
+    // Go to login page
+    await page.goto(routes.loginUrl);
+
+    // Click 'Reset password' button
+    await page.waitForSelector('[data-testid="resetPasswordBtn"]');
+    await page.click('[data-testid="resetPasswordBtn"]');
+
+    // Wait for error message
+    await page.waitForSelector('[data-testid="errorMsg"]');
+  });
+
+  test('resets password with invalid user', async () => {
+    // Go to login page
+    await page.goto(routes.loginUrl);
+
+    // Type invalid user
+    await page.waitForSelector('[data-testid="resetPasswordUsername"]');
+    await page.type('[data-testid="resetPasswordUsername"]', faker.internet.userName());
+
+    // Type invalid email
+    await page.waitForSelector('[data-testid="resetPasswordEmail"]');
+    await page.type('[data-testid="resetPasswordEmail"]', faker.internet.email());
+
+    // Click 'Reset password' button
+    await page.waitForSelector('[data-testid="resetPasswordBtn"]');
+    await page.click('[data-testid="resetPasswordBtn"]');
+
+    // Wait for error message
+    await page.waitForSelector('[data-testid="errorMsg"]');
+  });
+
+  test('resets password with valid user and invalid email', async () => {
+    // Go to login page
+    await page.goto(routes.loginUrl);
+
+    // Type valid user
+    await page.waitForSelector('[data-testid="resetPasswordUsername"]');
+    await page.type('[data-testid="resetPasswordUsername"]', validUser.username);
+
+    // Type invalid email
+    await page.waitForSelector('[data-testid="resetPasswordEmail"]');
+    await page.type('[data-testid="resetPasswordEmail"]', faker.internet.email());
+
+    // Click 'Reset password' button
+    await page.waitForSelector('[data-testid="resetPasswordBtn"]');
+    await page.click('[data-testid="resetPasswordBtn"]');
+
+    // Wait for error message
+    await page.waitForSelector('[data-testid="errorMsg"]');
+  });
+});
+
+describe('Change password form tests', () => {
+  test('changes password with no input', async () => {
+    page = await automaton.login(page, routes.loginUrl, validUser.username,
+      validUser.password);
+
+    // Click 'Change password' button
+    await page.waitForSelector('[data-testid="changePasswordBtn"]');
+    await page.click('[data-testid="changePasswordBtn"]');
+
+    // Click 'Change password' (inner) button
+    await page.waitForSelector('[data-testid="changePasswordInnerBtn"]');
+    await page.click('[data-testid="changePasswordInnerBtn"]');
+
+    // Wait for error message
+    await page.waitForSelector('[data-testid="errorMsg"]');
+  });
+
+  test('changes password with wrong current password', async () => {
+    page = await automaton.login(page, routes.loginUrl, validUser.username,
+      validUser.password);
+
+    // Click 'Change password' button
+    await page.waitForSelector('[data-testid="changePasswordBtn"]');
+    await page.click('[data-testid="changePasswordBtn"]');
+
+    // Type invalid current password
+    await page.waitForSelector('[data-testid="currentPassword"]');
+    await page.type('[data-testid="currentPassword"]', faker.internet.password());
+
+    // Type random newPassword
+    const newPassword = faker.internet.password();
+    await page.waitForSelector('[data-testid="newPassword"]');
+    await page.type('[data-testid="newPassword"]', newPassword);
+
+    // Type random newPasswordAgain (same as newPassword)
+    await page.waitForSelector('[data-testid="newPasswordAgain"]');
+    await page.type('[data-testid="newPasswordAgain"]', newPassword);
+
+    // Click 'Change password' (inner) button
+    await page.waitForSelector('[data-testid="changePasswordInnerBtn"]');
+    await page.click('[data-testid="changePasswordInnerBtn"]');
+
+    // Wait for error message
+    await page.waitForSelector('[data-testid="errorMsg"]');
+  });
+
+  test('changes password with new password mismatch', async () => {
+    page = await automaton.login(page, routes.loginUrl, validUser.username,
+      validUser.password);
+
+    // Click 'Change password' button
+    await page.waitForSelector('[data-testid="changePasswordBtn"]');
+    await page.click('[data-testid="changePasswordBtn"]');
+
+    // Type invalid current password
+    await page.waitForSelector('[data-testid="currentPassword"]');
+    await page.type('[data-testid="currentPassword"]', faker.internet.password());
+
+    // Type random newPassword
+    await page.waitForSelector('[data-testid="newPassword"]');
+    await page.type('[data-testid="newPassword"]', faker.internet.password());
+
+    // Type random newPasswordAgain
+    await page.waitForSelector('[data-testid="newPasswordAgain"]');
+    await page.type('[data-testid="newPasswordAgain"]', faker.internet.password());
+
+    // Click 'Change password' (inner) button
+    await page.waitForSelector('[data-testid="changePasswordInnerBtn"]');
+    await page.click('[data-testid="changePasswordInnerBtn"]');
+
+    // Wait for error message
+    await page.waitForSelector('[data-testid="errorMsg"]');
+  });
+});
+
+describe('Character counting test', () => {
+  test('chars left with no input', async () => {
+    page = await automaton.login(page, routes.loginUrl, validUser.username,
+      validUser.password);
+
+    // Get input counter num
+    const inputCounterEl = await page.$('[data-testid="inputCounterTest"]');
+    const inputCounterNum = Number(await page.evaluate((el) => el.textContent, inputCounterEl));
+
+    // Verify correct charsLeft
+    expect(inputCounterNum).toBe(POST_MAXLENGTH);
+  });
+
+  test('chars left with some input', async () => {
+    page = await automaton.login(page, routes.loginUrl, validUser.username,
+      validUser.password);
+
+    // Type some text
+    const exampleText = 'This is some example text';
+    await page.waitForSelector('[data-testid="userInput"]');
+    await page.type('[data-testid="userInput"]', exampleText);
+
+    // Get input counter num
+    const inputCounterEl = await page.$('[data-testid="inputCounterTest"]');
+    const inputCounterNum = Number(await page.evaluate((el) => el.textContent, inputCounterEl));
+
+    // Calculate correct charsLeft
+    const charsLeft = POST_MAXLENGTH - exampleText.length;
+
+    // Verify correct charsLeft
+    expect(inputCounterNum).toBe(charsLeft);
   });
 });
 

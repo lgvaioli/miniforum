@@ -1,6 +1,9 @@
 # Miniforum
 
-A simple miniforum (duh) powered by Node.js and PostgreSQL, made for educational purposes.
+A simple miniforum (duh) powered by Node.js and PostgreSQL, made for (my own) educational purposes.
+
+Check out the [live version](https://lgv-miniforum.herokuapp.com/)! (it might take a little
+while to load because it's hosted on Heroku's free plan).
 
 ## Getting Started
 
@@ -162,7 +165,7 @@ Once you have checked that you have the necessary env variables set, you can run
 npm test
 ```
 
-This runs Jest on all tests suites in verbose mode. Give it a little while; it takes ~20 seconds to finish in headless mode in my machine (Pentium G4560), and ~100 seconds to finish in browser mode.
+This runs Jest on all tests suites in verbose mode. Give it a little while; it takes ~32 seconds to finish in headless mode in my machine (Pentium G4560), and ~166 seconds to finish in browser mode.
 
 ### Deploying to Heroku
 

@@ -32,9 +32,9 @@
   <h2>Forgot your password? Recover it here!</h2>
   <form id="resetPasswordForm" method="POST" action="/api/resetPassword">
     <div class="formContainer">
-      <label>Username<input type="text" id="resetPasswordUsername" name="resetPasswordUsername"></label>
-      <label>Email<input type="text" id="resetPasswordEmail" name="resetPasswordEmail"></label>
-      <button type="submit" class="btn">Reset password</button>
+      <label>Username<input type="text" id="resetPasswordUsername" data-testid="resetPasswordUsername" name="resetPasswordUsername"></label>
+      <label>Email<input type="text" id="resetPasswordEmail" data-testid="resetPasswordEmail" name="resetPasswordEmail"></label>
+      <button type="submit" class="btn" data-testid="resetPasswordBtn">Reset password</button>
     </div>
   </form>
 
