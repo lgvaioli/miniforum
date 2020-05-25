@@ -17,7 +17,7 @@ function sendNewPassword(userEmail, newPassword) {
           email: process.env.EMAILER_VALIDATED_EMAIL,
           name: process.env.EMAILER_NAME,
         },
-        subject: 'Password Recovery',
+        subject: 'Password Reset',
         text: `Here is your new password: ${newPassword}`,
       };
 

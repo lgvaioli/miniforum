@@ -1,9 +1,9 @@
 html
 head
-    title= "Reset password"
+    title= title
     link(rel="stylesheet", type="text/css", href="/css/resetPassword.css")
 body
-    h1= "Password reset!"
+    h1= header
     h2= message
     button(id="gobackBtn", class="btn") Go back
 
@@ -11,6 +11,12 @@ body
     script.
         window.jQuery || document.write('<script src="./jquery-3.5.1.min.js"><\/script>');
         
+        let goBackUrl="#{goBackUrl}"
+
+        if(!goBackUrl) {
+            goBackUrl = '/';
+        }
+        
         $("#gobackBtn").on("click", (event) => {
-            window.location.replace("/");
+            window.location.replace(goBackUrl);
         });

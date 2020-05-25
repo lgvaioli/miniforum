@@ -1,4 +1,6 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable prefer-promise-reject-errors */
+// FIXME: I plan to get rid of these eslint hacks when I refactor this whole file
 
 require('dotenv').config();
 
@@ -6,37 +8,29 @@ const { Client } = require('pg');
 const bcrypt = require('bcrypt');
 const generatePassword = require('password-generator');
 
-// FIXME: I will refactor this entire module into a ES6 class later
 const database = {
-  // eslint-disable-next-line no-use-before-define
   findUserById,
-  // eslint-disable-next-line no-use-before-define
   findUserByName,
-  // eslint-disable-next-line no-use-before-define
   createUser,
-  // eslint-disable-next-line no-use-before-define
+  changePassword,
+  comparePassword,
   resetPassword,
-  // eslint-disable-next-line no-use-before-define
   findPost,
-  // eslint-disable-next-line no-use-before-define
   makePost,
-  // eslint-disable-next-line no-use-before-define
   editPost,
-  // eslint-disable-next-line no-use-before-define
   getPosts,
-  // eslint-disable-next-line no-use-before-define
   deletePost,
-  // eslint-disable-next-line no-use-before-define
   clearPosts,
-  // eslint-disable-next-line no-use-before-define
   close: closeDatabase,
 };
 
 let client = null;
 
-// Initializes the database.
-// Returns a Promise which resolves to a database object on success, and rejects with
-// an error on failure.
+/**
+ * Initializes the database.
+ * Returns a Promise which resolves to a database object on success, and rejects with
+ * an error on failure.
+ */
 function getDatabase() {
   return new Promise((resolve, reject) => {
     if (client) {
@@ -68,9 +62,11 @@ function getDatabase() {
   });
 }
 
-// Finds a user in the database by id.
-// Returns a Promise which resolves to the user if it exists, or rejects with an error
-// if it doesn't.
+/**
+ * Finds a user in the database by id.
+ * Returns a Promise which resolves to the user if it exists, or rejects with an error
+ * if it doesn't.
+ */
 function findUserById(id) {
   return new Promise((resolve, reject) => {
     const query = {
@@ -96,9 +92,11 @@ function findUserById(id) {
   });
 }
 
-// Finds a user in the database by name.
-// Returns a Promise which resolves to the user if it exists, or rejects with an error
-// if it doesn't.
+/**
+ * Finds a user in the database by name.
+ * Returns a Promise which resolves to the user if it exists, or rejects with an error
+ * if it doesn't.
+ */
 function findUserByName(name) {
   return new Promise((resolve, reject) => {
     const query = {
@@ -124,9 +122,11 @@ function findUserByName(name) {
   });
 }
 
-// Creates a new user in the database.
-// Resolves to the newly created user on success, fails with an error on failure (or if  a user
-// with the same name already exists).
+/**
+ * Creates a new user in the database.
+ * Resolves to the newly created user on success, fails with an error on failure (or
+ * if  a user with the same name already exists).
+ */
 function createUser(username, email, password) {
   return new Promise((resolve, reject) => {
     findUserByName(username)
@@ -152,8 +152,7 @@ function createUser(username, email, password) {
               return;
             }
 
-            // If we're here the new account was successfuly created. We resolve
-            // with the newly created user.
+            // New account was successfuly created. Resolve to new user.
             resolve(result.rows[0]);
           });
         });
@@ -161,16 +160,15 @@ function createUser(username, email, password) {
   });
 }
 
-// Returns a Promise which resolves to a new password, or rejects with an error.
-function resetPassword(userId) {
+/**
+ * Changes a user's password, i.e., takes newPassword, hashes it, and stores the hash
+ * in the database.
+ * Resolves to newPassword on success or rejects with an error.
+ */
+function changePassword(userId, newPassword) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
       .then((user) => {
-        // Default settings: memorable, 10 letters. It's not the strongest password
-        // in the world, but it's fine for a temporary password which the user
-        // should change right away anyway.
-        const newPassword = generatePassword();
-
         bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
           if (err) {
             reject(err);
@@ -200,8 +198,64 @@ function resetPassword(userId) {
   });
 }
 
-// Finds a post. Returns a Promise which resolves to the post if found, otherwise rejects
-// with an error.
+// Returns a Promise which resolves to a new password, or rejects with an error.
+function resetPassword(userId) {
+  /**
+   * Default settings: memorable, 10 letters. It's not the strongest password
+   * in the world, but it's fine for a temporary password which the user
+   * should change right away anyway.
+   */
+  return changePassword(userId, generatePassword());
+}
+
+/**
+ * Compares password to the user's stored password.
+ * Returns a Promise which resolves to true if the passwords match, or to false if they don't
+ * match, and which rejects if an error occurs.
+ */
+function comparePassword(userId, password) {
+  return new Promise((resolve, reject) => {
+    findUserById(userId)
+      .then((user) => {
+        // User exists, get password
+        const query = {
+          text: 'SELECT * FROM users WHERE id = $1',
+          values: [user.id],
+        };
+
+        client.query(query, (err, result) => {
+          if (err) {
+            return reject(err);
+          }
+
+          const userRow = result.rows[0];
+
+          // Compare passwords
+          return bcrypt.compare(password, userRow.password, (compareErr, match) => {
+            if (compareErr) {
+              return reject(compareErr);
+            }
+
+            if (match) {
+              // Passwords match, resolve to true
+              return resolve(true);
+            }
+
+            // Passwords don't match, resolve to false
+            return resolve(false);
+          });
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+/**
+ * Finds a post. Returns a Promise which resolves to the post if found, otherwise rejects
+ * with an error.
+ */
 function findPost(postId) {
   return new Promise((resolve, reject) => {
     const query = {
@@ -227,10 +281,12 @@ function findPost(postId) {
   });
 }
 
-// Makes a post. Takes the userId and the text of the post.
-// Returns a Promise which resolves to the new post (that is, the created database
-// row consisting of id, text, created_on, and user_id) if successful, or rejects
-// with an error on failure.
+/**
+ * Makes a post. Takes the userId and the text of the post.
+ * Returns a Promise which resolves to the new post (that is, the created database
+ * row consisting of id, text, created_on, and user_id) if successful, or rejects
+ * with an error on failure.
+ */
 function makePost(userId, text) {
   return new Promise((resolve, reject) => {
     const query = {
@@ -249,8 +305,10 @@ function makePost(userId, text) {
   });
 }
 
-// Edits (UPDATEs) a post.
-// Returns a Promise which resolves to the edited post, or rejects with an error.
+/**
+ * Edits (UPDATEs) a post.
+ * Returns a Promise which resolves to the edited post, or rejects with an error.
+ */
 function editPost(postId, text) {
   return new Promise((resolve, reject) => {
     const query = {
@@ -269,9 +327,11 @@ function editPost(postId, text) {
   });
 }
 
-// Gets all the posts in created_on descending order.
-// Returns a Promise which resolves to an array of posts inner joined with users.username
-// on success, rejects with an error on failure.
+/**
+ * Gets all the posts in created_on descending order.
+ * Returns a Promise which resolves to an array of posts inner joined with users.username
+ * on success, rejects with an error on failure.
+ */
 function getPosts() {
   return new Promise((resolve, reject) => {
     const query = {
@@ -291,8 +351,10 @@ function getPosts() {
   });
 }
 
-// Deletes a post. Returns a Promise which resolves to a success string if successful, or
-// rejects with an error.
+/**
+ * Deletes a post. Returns a Promise which resolves to a success string if successful, or
+ * rejects with an error.
+ */
 function deletePost(postId) {
   return new Promise((resolve, reject) => {
     const query = {
@@ -311,8 +373,10 @@ function deletePost(postId) {
   });
 }
 
-// Clears (deletes) all posts from the database. Returns a Promise which resolves to a
-// success string on success, or rejects with an error.
+/**
+ * Clears (deletes) all posts from the database. Returns a Promise which resolves to a
+ * success string on success, or rejects with an error.
+ */
 function clearPosts() {
   return new Promise((resolve, reject) => {
     client.query('DELETE FROM posts', (err) => {
@@ -326,7 +390,7 @@ function clearPosts() {
   });
 }
 
-// Ends database client conenction.
+// Ends database client connection.
 function closeDatabase() {
   return new Promise((resolve, reject) => {
     if (client) {

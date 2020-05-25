@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const BASE_URL = `${window.location.protocol}//${window.location.host}`;
 
 const routes = {
@@ -13,37 +14,6 @@ const POST_MAXLENGTH = 255;
 const HIDE_ANIMATION_DURATION = 300;
 
 $(document).ready(() => {
-  // FIXME: we should really refactor this script because it's starting to get too big and
-  // messy.
-  const toastSettings = {
-    transitionDuration: 500,
-    displayLength: 2000,
-  };
-
-  // Shows a toast applying the given CSS class.
-  function toastWithClass(html, toastClasses) {
-    // eslint-disable-next-line no-undef
-    M.toast({
-      html,
-      displayLength: toastSettings.displayLength,
-      classes: toastClasses,
-      inDuration: toastSettings.transitionDuration,
-      outDuration: toastSettings.transitionDuration,
-    });
-  }
-
-  // Shows a "success" toast.
-  function toastSuccess(text) {
-    toastWithClass(`<span data-testid="toast-success">${text}</span>`,
-      'toast-generic toast-success');
-  }
-
-  // Shows a "failure" toast.
-  function toastFailure(text) {
-    toastWithClass(`<span data-testid="toast-failure">${text}</span>`,
-      'toast-generic toast-failure');
-  }
-
   function deleteButtonCallback(event) {
     const postId = event.data;
 
@@ -57,11 +27,11 @@ $(document).ready(() => {
         // FIXME: this is kinda ugly and we can probably fix it easily by just
         // NOT returning a 200 (OK) code from the server when something is... not ok.
         if (serverResponse.error) {
-          toastFailure(serverResponse.error);
+          Toast.failure(serverResponse.error);
           return;
         }
 
-        toastSuccess(serverResponse);
+        Toast.success(serverResponse);
 
         // Hide and then remove from DOM
         $(`#post_${postId}`).hide(HIDE_ANIMATION_DURATION, () => {
@@ -72,7 +42,7 @@ $(document).ready(() => {
         // $("#post_" + postId).remove();
       },
       error: (err) => {
-        toastFailure('Error: Could not delete post. Check browser console for details');
+        Toast.failure('Error: Could not delete post. Check browser console for details');
         console.log(`Could not delete post: ${JSON.stringify(err)}`);
       },
     });
@@ -91,7 +61,7 @@ $(document).ready(() => {
       dataType: 'json',
       success: (data) => {
         if (data.error) {
-          toastFailure(data.error);
+          Toast.failure(data.error);
           return;
         }
 
@@ -109,10 +79,10 @@ $(document).ready(() => {
         $(`#post_${postId}`).toggle();
         $(`#editable_${postId}`).toggle();
 
-        toastSuccess(`Successfully updated post #${postId}!`);
+        Toast.success(`Successfully updated post #${postId}!`);
       },
       error: (err) => {
-        toastFailure('Error: Could not edit post. Check browser console for details');
+        Toast.failure('Error: Could not edit post. Check browser console for details');
         console.log(`Error: ${JSON.stringify(err)}`);
       },
     });
@@ -241,7 +211,7 @@ $(document).ready(() => {
       dataType: 'json',
       success: (data) => {
         if (data.error) {
-          toastFailure(JSON.stringify(data));
+          Toast.failure(JSON.stringify(data));
           return;
         }
 
@@ -252,7 +222,7 @@ $(document).ready(() => {
         });
       },
       error: (err) => {
-        toastFailure(JSON.stringify(err));
+        Toast.failure(JSON.stringify(err));
       },
     });
   }
@@ -266,7 +236,7 @@ $(document).ready(() => {
     const userInput = $('#userInput').val();
 
     if (userInput === '') {
-      toastFailure("You can't post an empty message");
+      Toast.failure("You can't post an empty message");
       return;
     }
 
@@ -278,7 +248,7 @@ $(document).ready(() => {
       dataType: 'json',
       success: (data) => {
         if (data.error) {
-          toastFailure(data.error);
+          Toast.failure(data.error);
           return;
         }
 
@@ -291,6 +261,8 @@ $(document).ready(() => {
         $('#userInput')
           .val('')
           .trigger('input');
+
+        Toast.success(`Successfuly posted! Post #${post.id}`);
       },
       error: (err) => {
         console.log(`Error: ${JSON.stringify(err)}`);
@@ -318,9 +290,14 @@ $(document).ready(() => {
         }
       },
       error: (err) => {
-        toastFailure(`Logout error: ${JSON.stringify(err)}`);
+        Toast.failure(`Logout error: ${JSON.stringify(err)}`);
       },
     });
+  });
+
+  // Change password button
+  $('#changePassword-btn').on('click', () => {
+    window.location.replace('/change_password.html');
   });
 
   getPosts();

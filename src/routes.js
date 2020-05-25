@@ -1,10 +1,12 @@
 require('dotenv').config();
 const passport = require('passport');
-const { isValidUsername } = require('./validation.js');
-const { isValidEmail } = require('./validation.js');
-const { isValidPassword } = require('./validation.js');
-const { isValidComment } = require('./validation.js');
-const { Emailer } = require('./emailer.js');
+const {
+  isValidUsername,
+  isValidEmail,
+  isValidPassword,
+  isValidComment,
+} = require('./validation');
+const { Emailer } = require('./emailer');
 
 // Redirect URLs
 const LOGIN_FAILURE_REDIRECT_URL = '/';
@@ -29,7 +31,7 @@ function setupRoutes(app, db) {
       res.sendFile('login.html', { root: process.env.PUBLIC_DIR });
     });
 
-  app.route('/login')
+  app.route('/api/login')
     .post((req, res, next) => {
       passport.authenticate('local', (err, user) => {
         if (err) {
@@ -89,10 +91,10 @@ function setupRoutes(app, db) {
         .catch((err) => res.render('error', { message: err }));
     });
 
-  app.route('/api/recovery')
+  app.route('/api/resetPassword')
     .post((req, res) => {
-      const username = req.body.recoveryUsername;
-      const email = req.body.recoveryEmail;
+      const username = req.body.resetPasswordUsername;
+      const email = req.body.resetPasswordEmail;
 
       if (!isValidUsername(username)) {
         return res.render('error', { message: 'Invalid username!' });
@@ -111,15 +113,62 @@ function setupRoutes(app, db) {
           return db.resetPassword(user.id)
             .then((newPassword) => {
               Emailer.sendNewPassword(user.email, newPassword)
-                .then(() => {
-                  const msg = 'An email with your new password has been sent. '
-                                                + "Don't forget to check your spam folder if it isn't "
-                                                + 'in your inbox!';
-                  return res.render('resetPassword', { message: msg });
-                })
+                .then(() => res.render('info', {
+                  title: 'Reset password',
+                  header: 'Password successfully reset!',
+                  message: "An email with your new password has been sent. Don't forget to check your spam folder if it isn't in your inbox!",
+                }))
                 .catch((err) => res.render('error', { message: err }));
             })
             .catch((err) => res.render('error', { message: err }));
+        })
+        .catch((err) => res.render('error', { message: err }));
+    });
+
+  app.route('/api/changePassword')
+    .post(ensureAuthenticated, (req, res) => {
+      const { currentPassword, newPassword, newPasswordAgain } = req.body;
+
+      if (newPassword !== newPasswordAgain) {
+        return res.render('error', {
+          message: 'New password does not match!',
+          goBackUrl: '/change_password.html',
+        });
+      }
+
+      if (!isValidPassword(newPassword)) {
+        return res.render('error', {
+          message: 'Passwords must be at least 6 characters long!',
+          goBackUrl: '/change_password.html',
+        });
+      }
+
+      return db.comparePassword(req.user.id, currentPassword)
+        .then((match) => {
+          if (match) {
+            // Change password
+            return db.changePassword(req.user.id, newPassword)
+              .then(() => {
+                // Logout user and redirect
+                // FIXME: show a success toast/page and give warning of redirect
+                req.logout();
+
+                res.render('info', {
+                  title: 'Change password',
+                  header: 'Password successfully changed!',
+                  message: 'You have been automatically logged out. Press the button below to go back to the main page and log back in!',
+                });
+              })
+              .catch((err) => res.render('error', {
+                message: err,
+                goBackUrl: '/change_password.html',
+              }));
+          }
+
+          return res.render('error', {
+            message: 'Incorrect password!',
+            goBackUrl: '/change_password.html',
+          });
         })
         .catch((err) => res.render('error', { message: err }));
     });
