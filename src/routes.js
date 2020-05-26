@@ -6,7 +6,6 @@ const {
   isValidPassword,
   isValidComment,
 } = require('./validation');
-const { Emailer } = require('./emailer');
 
 // Redirect URLs
 const LOGIN_FAILURE_REDIRECT_URL = '/';
@@ -25,7 +24,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 // Takes an express app and sets up our routes
-function setupRoutes(app, db) {
+function setupRoutes(app, db, emailer) {
   app.route('/')
     .get((req, res) => {
       res.sendFile('login.html', { root: process.env.PUBLIC_DIR });
@@ -93,6 +92,10 @@ function setupRoutes(app, db) {
 
   app.route('/api/resetPassword')
     .post((req, res) => {
+      if (!emailer) {
+        return res.render('error', { message: 'Emailer service not available!' });
+      }
+
       const username = req.body.resetPasswordUsername;
       const email = req.body.resetPasswordEmail;
 
@@ -112,7 +115,7 @@ function setupRoutes(app, db) {
 
           return db.resetPassword(user.id)
             .then((newPassword) => {
-              Emailer.sendNewPassword(user.email, newPassword)
+              emailer.sendNewPassword(user.email, newPassword)
                 .then(() => res.render('info', {
                   title: 'Reset password',
                   header: 'Password successfully reset!',

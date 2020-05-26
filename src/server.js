@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const { getDatabase } = require('./database.js');
 const { setupRoutes } = require('./routes.js');
 const { setupAuthentication } = require('./authentication.js');
-const { setupEmailer } = require('./emailer.js');
+const { getEmailer } = require('./emailer.js');
 
 getDatabase()
   .then((db) => {
@@ -27,8 +27,8 @@ getDatabase()
 
     // Set up stuff
     setupAuthentication(app, db);
-    setupRoutes(app, db);
-    setupEmailer();
+    const emailer = process.env.SENDGRID_API_KEY ? getEmailer(process.env.SENDGRID_API_KEY) : null;
+    setupRoutes(app, db, emailer);
 
     app.listen(process.env.PORT, (err) => {
       if (err) {
