@@ -7,23 +7,10 @@ require('dotenv').config();
 const { Client } = require('pg');
 const bcrypt = require('bcrypt');
 const generatePassword = require('password-generator');
+const { getLogger } = require('./logger');
 
-const database = {
-  findUserById,
-  findUserByName,
-  createUser,
-  changePassword,
-  comparePassword,
-  resetPassword,
-  findPost,
-  makePost,
-  editPost,
-  getPosts,
-  deletePost,
-  clearPosts,
-  close: closeDatabase,
-};
-
+const logger = getLogger();
+let database = null;
 let client = null;
 
 /**
@@ -34,8 +21,7 @@ let client = null;
 function getDatabase() {
   return new Promise((resolve, reject) => {
     if (client) {
-      resolve(database);
-      return;
+      return resolve(database);
     }
 
     let noSsl = false;
@@ -49,15 +35,34 @@ function getDatabase() {
       ssl: noSsl ? false : { rejectUnauthorized: false },
     });
 
-    client.connect((err) => {
+    return client.connect((err) => {
       if (err) {
-        reject(`Could not connect to database: ${err}`);
-        return;
+        const errMsg = `Client could not connect to database: ${err}`;
+        logger.error(errMsg);
+        return reject(errMsg);
       }
 
-      console.log('Connected successfully to database!');
+      logger.info('Client successfully connected to database');
 
-      resolve(database);
+      if (!database) {
+        database = {
+          findUserById,
+          findUserByName,
+          createUser,
+          changePassword,
+          comparePassword,
+          resetPassword,
+          findPost,
+          makePost,
+          editPost,
+          getPosts,
+          deletePost,
+          clearPosts,
+          close: closeDatabase,
+        };
+      }
+
+      return resolve(database);
     });
   });
 }
@@ -76,26 +81,24 @@ function findUserById(id) {
 
     client.query(query, (err, res) => {
       if (err) {
-        reject(`Error while looking up user in database: ${err}`);
-        return;
+        return reject(`Error while looking up user in database: ${err}`);
       }
 
       const user = res.rows[0];
 
       if (!user) {
-        reject(`user #${id} doesn't exist`);
-        return;
+        return reject(`user #${id} doesn't exist`);
       }
 
-      resolve(user);
+      return resolve(user);
     });
   });
 }
 
 /**
  * Finds a user in the database by name.
- * Returns a Promise which resolves to the user if it exists, or rejects with an error
- * if it doesn't.
+ * Returns a Promise which resolves to the user if it exists, to null if it doesn't, and rejects
+ * with an error if an error occurs while querying the database.
  */
 function findUserByName(name) {
   return new Promise((resolve, reject) => {
@@ -106,39 +109,38 @@ function findUserByName(name) {
 
     client.query(query, (err, res) => {
       if (err) {
-        reject(err);
-        return;
+        return reject(err);
       }
 
       const user = res.rows[0];
 
       if (!user) {
-        reject("User doesn't exist!");
-        return;
+        return resolve(null);
       }
 
-      resolve(user);
+      return resolve(user);
     });
   });
 }
 
 /**
  * Creates a new user in the database.
- * Resolves to the newly created user on success, fails with an error on failure (or
- * if  a user with the same name already exists).
+ * Resolves to the newly created user on success, to null if the user already exists, and
+ * rejects with an error if there was any other problem.
  */
 function createUser(username, email, password) {
   return new Promise((resolve, reject) => {
     findUserByName(username)
-      .then(() => {
-        reject('User already exists!');
-      })
-      .catch(() => {
-        // Create user account. We store a hash instead of the plaintext password.
-        bcrypt.hash(password, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
+      .then((user) => {
+        // User already exists, resolve to null
+        if (user) {
+          return resolve(null);
+        }
+
+        // User doesn't exist, create account. We store a hash instead of the plaintext password.
+        return bcrypt.hash(password, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
           if (err) {
-            reject(err);
-            return;
+            return reject(err);
           }
 
           const query = {
@@ -146,17 +148,17 @@ function createUser(username, email, password) {
             values: [username, email, hash],
           };
 
-          client.query(query, (dbErr, result) => {
+          return client.query(query, (dbErr, result) => {
             if (dbErr) {
-              reject(dbErr);
-              return;
+              return reject(dbErr);
             }
 
             // New account was successfuly created. Resolve to new user.
-            resolve(result.rows[0]);
+            return resolve(result.rows[0]);
           });
         });
-      });
+      })
+      .catch((err) => reject(err));
   });
 }
 
@@ -171,8 +173,7 @@ function changePassword(userId, newPassword) {
       .then((user) => {
         bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
           if (err) {
-            reject(err);
-            return;
+            return reject(err);
           }
 
           // Update "password" (i.e. hash) in database
@@ -181,20 +182,17 @@ function changePassword(userId, newPassword) {
             values: [hash, user.id],
           };
 
-          client.query(query, (dbErr) => {
+          return client.query(query, (dbErr) => {
             if (dbErr) {
-              reject(dbErr);
-              return;
+              return reject(dbErr);
             }
 
             // Query was successful, resolve promise to new password
-            resolve(newPassword);
+            return resolve(newPassword);
           });
         });
       })
-      .catch((err) => {
-        reject(err);
-      });
+      .catch((err) => reject(err));
   });
 }
 
@@ -246,9 +244,7 @@ function comparePassword(userId, password) {
           });
         });
       })
-      .catch((err) => {
-        reject(err);
-      });
+      .catch((err) => reject(err));
   });
 }
 
@@ -265,18 +261,16 @@ function findPost(postId) {
 
     client.query(query, (err, result) => {
       if (err) {
-        reject(err);
-        return;
+        return reject(err);
       }
 
       const post = result.rows[0];
 
       if (!post) {
-        reject('Invalid post id!');
-        return;
+        return reject('Invalid post id!');
       }
 
-      resolve(post);
+      return resolve(post);
     });
   });
 }
@@ -296,11 +290,10 @@ function makePost(userId, text) {
 
     client.query(query, (err, result) => {
       if (err) {
-        reject(`Could not INSERT INTO: ${err}`);
-        return;
+        return reject(`Could not INSERT INTO: ${err}`);
       }
 
-      resolve(result.rows[0]);
+      return resolve(result.rows[0]);
     });
   });
 }
@@ -341,12 +334,10 @@ function getPosts() {
 
     client.query(query, (err, result) => {
       if (err) {
-        console.log(`Error: ${err}`);
-        reject(err);
-        return;
+        return reject(err);
       }
 
-      resolve(result.rows);
+      return resolve(result.rows);
     });
   });
 }
@@ -364,11 +355,10 @@ function deletePost(postId) {
 
     client.query(query, (err) => {
       if (err) {
-        reject(`Could not DELETE post #${postId}: ${err}`);
-        return;
+        return reject(`Could not DELETE post #${postId}: ${err}`);
       }
 
-      resolve(`Deleted post #${postId}`);
+      return resolve(`Deleted post #${postId}`);
     });
   });
 }
@@ -381,11 +371,10 @@ function clearPosts() {
   return new Promise((resolve, reject) => {
     client.query('DELETE FROM posts', (err) => {
       if (err) {
-        reject(err);
-        return;
+        return reject(err);
       }
 
-      resolve('cleared posts');
+      return resolve('cleared posts');
     });
   });
 }
@@ -396,16 +385,21 @@ function closeDatabase() {
     if (client) {
       client.end((err) => {
         if (err) {
-          reject(`Could not disconnect database client: ${err}`);
-          return;
+          const errMsg = `Could not disconnect database client: ${err}`;
+          logger.error(errMsg);
+          return reject(errMsg);
         }
 
         client = null;
-        resolve('Successfully disconnected database client');
+        const msg = 'Successfully disconnected database client';
+        logger.info(msg);
+        return resolve(msg);
       });
-    } else {
-      reject('Tried to disconnect uninitialized database client');
     }
+
+    const msg = 'Tried to disconnect uninitialized database client';
+    logger.warn(msg);
+    return reject(msg);
   });
 }
 

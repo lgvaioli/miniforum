@@ -4,10 +4,13 @@ const express = require('express');
 
 const app = express();
 const bodyParser = require('body-parser');
-const { getDatabase } = require('./database.js');
-const { setupRoutes } = require('./routes.js');
-const { setupAuthentication } = require('./authentication.js');
-const { getEmailer } = require('./emailer.js');
+const { getDatabase } = require('./database');
+const { setupRoutes } = require('./routes');
+const { setupAuthentication } = require('./authentication');
+const { getEmailer } = require('./emailer');
+const { getLogger } = require('./logger');
+
+const logger = getLogger();
 
 getDatabase()
   .then((db) => {
@@ -30,20 +33,18 @@ getDatabase()
     const emailer = process.env.SENDGRID_API_KEY ? getEmailer(process.env.SENDGRID_API_KEY) : null;
     setupRoutes(app, db, emailer);
 
-    app.listen(process.env.PORT, (err) => {
-      if (err) {
-        console.log(`Error while setting server to listen: ${err}`);
-        return;
+    app.listen(process.env.PORT, (listenErr) => {
+      if (listenErr) {
+        return logger.error(`Could not start server: ${listenErr}`);
       }
 
-      console.log(`Server listening at port ${process.env.PORT}...`);
+      return logger.info(`Server listening at port ${process.env.PORT}...`);
     });
   })
   .catch((err) => {
     // This is a critical failure which renders the entire site useless.
     // Setup a route to catch all GET requests and render an error template.
-
-    console.log(err);
+    logger.error(`Could not connect to database: ${err}`);
 
     app.use(express.static(process.env.PUBLIC_DIR, { index: false }));
     app.set('views', process.env.VIEWS_DIR);
@@ -54,10 +55,9 @@ getDatabase()
 
     app.listen(process.env.PORT, (listenErr) => {
       if (listenErr) {
-        console.log(`Error while setting server to listen: ${listenErr}`);
-        return;
+        return logger.error(`Could not start server: ${listenErr}`);
       }
 
-      console.log(`Server listening at port ${process.env.PORT}...`);
+      return logger.info(`Server listening at port ${process.env.PORT}...`);
     });
   });

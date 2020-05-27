@@ -1,3 +1,5 @@
 node_modules
 .env
 *.css.map
+errors.log
+general.log

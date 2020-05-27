@@ -3,6 +3,9 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require('bcrypt');
 const connectPgSimple = require('connect-pg-simple');
+const { getLogger } = require('./logger');
+
+const logger = getLogger();
 
 // Takes express app and sets up authentication with Passport
 function setupAuthentication(app, db) {
@@ -36,22 +39,32 @@ function setupAuthentication(app, db) {
   // Passport local strategy
   passport.use(new LocalStrategy(
     ((username, password, done) => {
-      console.log(`Authenticating user "${username}"`);
-
       db.findUserByName(username)
         .then((user) => {
-          bcrypt.compare(password, user.password, (err, match) => {
+          if (!user) {
+            logger.warn(`Tried to authenticate invalid user '${username}'`);
+            return done("User doesn't exist!", false);
+          }
+
+          return bcrypt.compare(password, user.password, (err, match) => {
             if (err) {
+              logger.error(`bcrypt.compare error while trying to authenticate user '${username}': ${err}`);
               return done(err);
             }
 
             if (match) {
+              logger.info(`Successfully authenticated user '${username}'`);
               return done(null, user);
             }
+
+            logger.warn(`Authentication failed for user '${username}': Password mismatch`);
             return done('Incorrect password!', false);
           });
         })
-        .catch((err) => done(err));
+        .catch((err) => {
+          logger.error(`db.findUserByName error while trying to authenticate user '${username}': ${err}`);
+          return done(err);
+        });
     }),
   ));
 }
