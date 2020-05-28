@@ -244,7 +244,7 @@ function setupRoutes(app, db, emailer) {
 
       db.makePost(userId, userInput)
         .then((post) => {
-          logger.info(`${getClientIp(req)} ('${req.user.username}') successfully made post #${post.id}: ${userInput}`);
+          logger.info(`${getClientIp(req)} ('${req.user.username}') successfully made post #${post.id}`);
 
           const data = {
             userId,
@@ -281,7 +281,7 @@ function setupRoutes(app, db, emailer) {
 
           return db.editPost(postId, editText)
             .then((editedPost) => {
-              logger.info(`${getClientIp(req)} ('${req.user.username}') successfully edited post #${postId}: ${editedPost.text}`);
+              logger.info(`${getClientIp(req)} ('${req.user.username}') successfully edited post #${postId}`);
               return res.json(editedPost);
             })
             .catch((err) => {
@@ -322,7 +322,7 @@ function setupRoutes(app, db, emailer) {
         .then((post) => {
           if (post.user_id !== req.user.id) {
             logger.warn(`${getClientIp(req)} ('${req.user.username}') tried to delete post #${postId}, which belongs to another user`);
-            return res.json({ error: "you can't delete other users' posts!" });
+            return res.json({ error: "You can't delete other users' posts!" });
           }
 
           return db.deletePost(postId)

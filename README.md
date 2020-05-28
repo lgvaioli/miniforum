@@ -100,8 +100,10 @@ PUPPETEER_SLOWMO=50
 PUPPETEER_HEADLESS_SLOWMO=3
 JEST_TIMEOUT=60000
 TEST_BASEURL_NOPORT='http://localhost:'
-TEST_VALID_USERNAME=<your test user username, read further down below>
-TEST_VALID_PASSWORD=<your test user password, read further down below>
+TEST_USERNAME=<your first test user username, read further down below>
+TEST_PASSWORD=<your first test user password, read further down below>
+TEST_USERNAME_2=<your second test user username, read further down below>
+TEST_PASSWORD_2=<your second test user password, read further down below>
 ```
 
 Miniforum implements basic password reset by sending you an email with a new, randomly
@@ -133,11 +135,11 @@ see Miniforum in action. If you do: congrats! You have successfully deployed Min
 
 #### Testing in localhost
 
-##### Setting up a test user in Miniforum #####
+##### Setting up testing users in Miniforum #####
 
-The first thing you have to do if you want to run Miniforum's tests is to create a test user account through Miniforum's UI. This is necessary given how password storage works in Miniforum: for security reasons, it doesn't actually store users' passwords, but rather their hashes. What this means in practical terms is that a testing user cannot be automatically created through raw SQL in a script.
+The first thing you have to do if you want to run Miniforum's tests is to create a couple of test user accounts through Miniforum's UI. This is necessary given how password storage works in Miniforum: for security reasons, it doesn't actually store users' passwords, but rather their hashes. What this means in practical terms is that a test user cannot be automatically created through raw SQL in a script.
 
-The test user's username and password can be whatever you want, just don't forget them because you will need them to set a couple of variables in the *.env* file.
+Given how Miniforum's tests work, you have to create *two* different test user accounts. The accounts' usernames and passwords can be whatever you want, just don't forget them because you will need them to set a couple of variables in the *.env* file.
 
 ##### Setting up testing variables in .env file #####
 To test your new Miniforum deployment in localhost, first make sure that the following env variables are set in your *.env* file:
@@ -147,8 +149,10 @@ PUPPETEER_SLOWMO=50
 PUPPETEER_HEADLESS_SLOWMO=3
 JEST_TIMEOUT=60000
 TEST_BASEURL_NOPORT='http://localhost:'
-TEST_USERNAME=<your test user username from the previous step>
-TEST_PASSWORD=<your test user password from the previous step>
+TEST_USERNAME=<your first test user username from the previous step>
+TEST_PASSWORD=<your first test user password from the previous step>
+TEST_USERNAME_2=<your second test user username from the previous step>
+TEST_PASSWORD_2=<your second test user password from the previous step>
 ```
 The ```PUPPETEER_BROWSER``` variable controls whether [Puppeteer](https://github.com/puppeteer/puppeteer) runs in headless mode (i.e. you don't see anything and Puppeteer just runs quietly in the console) or not (i.e. you actually see a testing browser doing stuff).
 
@@ -165,7 +169,7 @@ Once you have checked that you have the necessary env variables set, you can run
 npm test
 ```
 
-This runs Jest on all tests suites in verbose mode. Give it a little while; it takes ~32 seconds to finish in headless mode in my machine (Pentium G4560), and ~166 seconds to finish in browser mode.
+This runs Jest on all tests suites in verbose mode. Give it a little while; it takes ~40 seconds to finish in headless mode in my machine (Pentium G4560), and ~200 seconds to finish in browser mode.
 
 ### Deploying to Heroku
 

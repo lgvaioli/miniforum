@@ -150,8 +150,20 @@ $(document).ready(() => {
     $postId.text(`Post ID: ${id}`);
 
     const $createdOn = $('<p>', { id: `postDate_${id}`, class: 'post-info' });
-    const createdOnStr = new Date(createdOn).toLocaleString('es-AR');
-    $createdOn.text(createdOnStr);
+
+    /**
+     * FIXME: this should not be hardcoded because it's clearly dependent on the
+     * user's locale/preferences.
+     */
+    const createdOnStr = new Date(createdOn).toLocaleString('es-AR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    $createdOn.text(`${createdOnStr} hs`);
 
     const $postText = $('<p>', {
       id: `postText_${id}`,

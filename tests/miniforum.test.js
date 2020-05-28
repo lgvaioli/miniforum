@@ -22,6 +22,11 @@ const validUser = {
   password: process.env.TEST_PASSWORD,
 };
 
+const anotherValidUser = {
+  username: process.env.TEST_USERNAME_2,
+  password: process.env.TEST_PASSWORD_2,
+};
+
 describe('Login form tests', () => {
   beforeAll(async () => {
     // First suite launches browser and creates page.
@@ -61,54 +66,61 @@ describe('Login form tests', () => {
   });
 
   test('logins with no username and no password', async () => {
-    page = await automaton.login(page, routes.loginUrl, null, null);
+    page = await automaton.login(page, routes.loginUrl, { username: null, password: null });
 
     // Wait for error message
     await page.waitForSelector('[data-testid="errorMsg"]');
   });
 
   test('logins with invalid username and no password', async () => {
-    page = await automaton.login(page, routes.loginUrl, faker.internet.userName(),
-      null);
+    page = await automaton.login(page, routes.loginUrl, {
+      username: faker.internet.userName(),
+      password: null,
+    });
 
     // Wait for error message
     await page.waitForSelector('[data-testid="errorMsg"]');
   });
 
   test('logins with invalid username and invalid password', async () => {
-    page = await automaton.login(page, routes.loginUrl, faker.internet.userName(),
-      faker.internet.password());
+    page = await automaton.login(page, routes.loginUrl, {
+      username: faker.internet.userName(),
+      password: faker.internet.password(),
+    });
 
     // Wait for error message
     await page.waitForSelector('[data-testid="errorMsg"]');
   });
 
   test('logins with valid username and no password', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username, null);
+    page = await automaton.login(page, routes.loginUrl, {
+      username: validUser.username,
+      password: null,
+    });
 
     // Wait for error message
     await page.waitForSelector('[data-testid="errorMsg"]');
   });
 
   test('logins with valid username and invalid password', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      faker.internet.password());
+    page = await automaton.login(page, routes.loginUrl, {
+      username: validUser.username,
+      password: faker.internet.password(),
+    });
 
     // Wait for error message
     await page.waitForSelector('[data-testid="errorMsg"]');
   });
 
   test('logins with valid username and valid password', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, validUser);
 
     // Wait for logout button. We'll take that as a sign that we're effectively logged in
     await page.waitForSelector('[data-testid="logoutBtn"]');
   });
 
   test('logins with valid username and valid password, then logouts', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, validUser);
 
     // Wait for logout button and click
     await page.waitForSelector('[data-testid="logoutBtn"]');
@@ -238,8 +250,7 @@ describe('Reset password form tests', () => {
 
 describe('Change password form tests', () => {
   test('changes password with no input', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, validUser);
 
     // Click 'Change password' button
     await page.waitForSelector('[data-testid="changePasswordBtn"]');
@@ -254,8 +265,10 @@ describe('Change password form tests', () => {
   });
 
   test('changes password with wrong current password', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, {
+      username: validUser.username,
+      password: validUser.password,
+    });
 
     // Click 'Change password' button
     await page.waitForSelector('[data-testid="changePasswordBtn"]');
@@ -283,8 +296,7 @@ describe('Change password form tests', () => {
   });
 
   test('changes password with new password mismatch', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, validUser);
 
     // Click 'Change password' button
     await page.waitForSelector('[data-testid="changePasswordBtn"]');
@@ -313,8 +325,7 @@ describe('Change password form tests', () => {
 
 describe('Character counting test', () => {
   test('chars left with no input', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, validUser);
 
     // Get input counter num
     const inputCounterEl = await page.$('[data-testid="inputCounterTest"]');
@@ -325,8 +336,7 @@ describe('Character counting test', () => {
   });
 
   test('chars left with some input', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser.username,
-      validUser.password);
+    page = await automaton.login(page, routes.loginUrl, validUser);
 
     // Type some text
     const exampleText = 'This is some example text';
@@ -352,16 +362,8 @@ describe('Posting tests', () => {
     await database.clearPosts();
   });
 
-  // Close puppeteer browser and database connection
-  afterAll(async () => {
-    await browser.close(); // last suite closes browser
-    await database.close();
-  });
-
   test('makes a post with valid input', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser.username,
-      validUser.password,
-      'Posted with Puppeteer!');
+    page = await automaton.makePost(page, routes.loginUrl, validUser, 'Posted with Puppeteer!');
 
     // Check that the post was actually made. Do note that this works only if there were no
     // previous posts.
@@ -369,24 +371,21 @@ describe('Posting tests', () => {
   });
 
   test('makes a post with no input', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser.username,
-      validUser.password, null);
+    page = await automaton.makePost(page, routes.loginUrl, validUser, null);
 
     // Wait for failure toast
     await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('makes a post with invalid input (only whitespace)', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser.username,
-      validUser.password, '       ');
+    page = await automaton.makePost(page, routes.loginUrl, validUser, '       ');
 
     // Wait for failure toast
     await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('deletes a post', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser.username,
-      validUser.password,
+    page = await automaton.makePost(page, routes.loginUrl, validUser,
       "Posted with Puppeteer; we're gonna delete this one!");
 
     // Wait for and click the first delete button on the page
@@ -398,8 +397,7 @@ describe('Posting tests', () => {
   });
 
   test('edits a post', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser.username,
-      validUser.password,
+    page = await automaton.makePost(page, routes.loginUrl, validUser,
       "Posted with Puppeteer; we're gonna edit this one!");
 
     // Wait for and click the edit button
@@ -423,5 +421,109 @@ describe('Posting tests', () => {
       postTextElement);
 
     expect(text).toMatch(/.* EDITED!$/);
+  });
+});
+
+describe('API tests', () => {
+  // For simplicity's sake, clear database of all posts before each test
+  beforeEach(async () => {
+    database = await getDatabase();
+    await database.clearPosts();
+  });
+
+  /**
+   * Last suite must close the Puppeteer browser and database connection!
+   * Note that the database singleton is absolutely evil and we should probably
+   * get rid of it as soon as possible. A database singleton sounds like a good
+   * idea until you actually try to implement testing...
+   * Long story short: until we get rid of the wicked database singleton, we must
+   * database.close ONLY in the last suite which uses the database.
+   */
+  afterAll(async () => {
+    await browser.close();
+    await database.close();
+  });
+
+  test('deletes post from another user', async () => {
+    // Make post as validUser
+    const data = await automaton.makePostReturnPostId(page, routes.loginUrl, validUser,
+      'Posted with Puppeteer!');
+
+    let loggedInPage = data.page;
+
+    // Log out from validUser
+    await loggedInPage.waitForSelector('[data-testid="logoutBtn"]');
+    await loggedInPage.click('[data-testid="logoutBtn"]');
+    await loggedInPage.waitForSelector('[data-testid="loginUsername"]');
+
+    // Log in as anotherValidUser
+    loggedInPage = await automaton.login(loggedInPage, routes.loginUrl, anotherValidUser);
+    await loggedInPage.waitForSelector('[data-testid="logoutBtn"]');
+
+    // Try to delete validUser's post
+    const fetchResult = await loggedInPage.evaluate((postId, deletePostRoute) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
+
+      const urlencoded = new URLSearchParams();
+      urlencoded.append('postId', postId);
+
+      const requestOptions = {
+        method: 'DELETE',
+        headers: myHeaders,
+        body: urlencoded,
+        redirect: 'follow',
+      };
+
+      return fetch(deletePostRoute, requestOptions)
+        .then((response) => response.text())
+        .then((result) => result)
+        .catch((err) => err);
+    }, data.postId, '/api/deletePost');
+
+    // FIXME: Brittle test; this string might change in the future!
+    expect(fetchResult).toMatch(/.*You can't delete other users' posts.*/);
+  });
+
+  test('edits post from another user', async () => {
+    // Make post as validUser
+    const data = await automaton.makePostReturnPostId(page, routes.loginUrl, validUser,
+      'Posted with Puppeteer!');
+
+    let loggedInPage = data.page;
+
+    // Log out from validUser
+    await loggedInPage.waitForSelector('[data-testid="logoutBtn"]');
+    await loggedInPage.click('[data-testid="logoutBtn"]');
+    await loggedInPage.waitForSelector('[data-testid="loginUsername"]');
+
+    // Log in as anotherValidUser
+    loggedInPage = await automaton.login(loggedInPage, routes.loginUrl, anotherValidUser);
+    await loggedInPage.waitForSelector('[data-testid="logoutBtn"]');
+
+    // Try to edit validUser's post
+    const fetchResult = await loggedInPage.evaluate((postId, editPostRoute) => {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
+
+      const urlencoded = new URLSearchParams();
+      urlencoded.append('postId', postId);
+      urlencoded.append('editText', 'Edited a post from another user!');
+
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: urlencoded,
+        redirect: 'follow',
+      };
+
+      return fetch(editPostRoute, requestOptions)
+        .then((response) => response.text())
+        .then((result) => result)
+        .catch((err) => err);
+    }, data.postId, '/api/editPost');
+
+    // FIXME: Brittle test; this string might change in the future!
+    expect(fetchResult).toMatch(/.*You can't edit other users' posts*/);
   });
 });
