@@ -38,12 +38,12 @@ function setupRoutes(app, db, emailer) {
     .post((req, res, next) => {
       passport.authenticate('local', (err, user) => {
         if (err) {
-          logger.info(`${getClientIp(req)}: passport.authenticate error: ${err}`);
+          logger.warn(`${getClientIp(req)} ${err}`);
           return res.render('error', { message: err });
         }
 
         if (!user) {
-          logger.warn(`${getClientIp(req)} tried to authenticate with no login information`);
+          logger.warn(`${getClientIp(req)} failed to log in: No login information`);
           return res.render('error', { message: 'No login information!' });
         }
 
@@ -53,7 +53,7 @@ function setupRoutes(app, db, emailer) {
             return res.render('error', { message: loginErr });
           }
 
-          logger.info(`${getClientIp(req)} successfully logged in as '${req.user.username}'`);
+          logger.info(`${getClientIp(req)} logged in as '${req.user.username}'`);
           return res.redirect(LOGIN_SUCCESS_REDIRECT_URL);
         });
       })(req, res, next);
@@ -71,17 +71,17 @@ function setupRoutes(app, db, emailer) {
       const password = req.body.accountPassword;
 
       if (!isValidUsername(username)) {
-        logger.info(`${getClientIp(req)} tried to create an account with an invalid username`);
+        logger.warn(`${getClientIp(req)} failed to create new account with username '${username}': Invalid username`);
         return res.render('error', { message: 'Invalid username!' });
       }
 
       if (!isValidEmail(email)) {
-        logger.info(`${getClientIp(req)} tried to create an account with an invalid email`);
+        logger.warn(`${getClientIp(req)} failed to create new account with username '${username}' and email '${email}': Invalid email`);
         return res.render('error', { message: 'Invalid email!' });
       }
 
       if (!isValidPassword(password)) {
-        logger.info(`${getClientIp(req)} tried to create an account with an invalid password`);
+        logger.warn(`${getClientIp(req)} failed to create new account: Invalid password`);
         return res.render('error', { message: 'Passwords must be at least 6 characters long!' });
       }
 
@@ -89,8 +89,8 @@ function setupRoutes(app, db, emailer) {
         .then((user) => {
           // User already existed, render an error template and return
           if (!user) {
-            logger.info(`${getClientIp(req)} tried to create a new account and failed because the username was already taken`);
-            return res.render('error', { message: 'User already existed!' });
+            logger.warn(`${getClientIp(req)} failed to create new account with username '${username}' and email '${email}': Username taken`);
+            return res.render('error', { message: 'Username taken!' });
           }
 
           // User didn't exist, log him in
@@ -100,7 +100,7 @@ function setupRoutes(app, db, emailer) {
               return res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
             }
 
-            logger.info(`${getClientIp(req)} successfully created account with username '${username}'`);
+            logger.info(`${getClientIp(req)} created new account with username '${username}' and email '${email}'`);
             return res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
           });
         })
@@ -113,7 +113,7 @@ function setupRoutes(app, db, emailer) {
   app.route('/api/resetPassword')
     .post((req, res) => {
       if (!emailer) {
-        logger.warn(`${getClientIp(req)} could not reset password because emailer is unavailable`);
+        logger.warn(`${getClientIp(req)} failed to reset password: Emailer is unavailable`);
         return res.render('error', { message: 'Emailer service not available!' });
       }
 
@@ -121,36 +121,35 @@ function setupRoutes(app, db, emailer) {
       const email = req.body.resetPasswordEmail;
 
       if (!isValidUsername(username)) {
-        logger.info(`${getClientIp(req)} tried to reset password with an invalid username`);
+        logger.warn(`${getClientIp(req)} failed to reset password with username '${username}': Invalid username`);
         return res.render('error', { message: 'Invalid username!' });
       }
 
       if (!isValidEmail(email)) {
-        logger.info(`${getClientIp(req)} tried to reset password with an invalid email`);
+        logger.info(`${getClientIp(req)} failed to reset password with username '${username}' and email '${email}': Invalid email`);
         return res.render('error', { message: 'Invalid email!' });
       }
 
       return db.findUserByName(username)
         .then((user) => {
           if (!user) {
-            // User doesn't exist
-            logger.info(`${getClientIp(req)} tried to reset password of non-existent user '${username}' and failed`);
+            logger.warn(`${getClientIp(req)} failed to reset password with username '${username}': User doesn't exist`);
             return res.render('error', { message: "User doesn't exist!" });
           }
 
           if (user.email !== email) {
-            logger.warn(`${getClientIp(req)} tried to reset password with valid username but invalid email`);
-            return res.render('error', { message: "Email doesn't match username!" });
+            logger.warn(`${getClientIp(req)} failed to reset password with username '${username}' and email '${email}': Email doesn't match current email ('${user.email}')`);
+            return res.render('error', { message: "Email doesn't match current email!" });
           }
 
           return db.resetPassword(user.id)
             .then((newPassword) => {
               emailer.sendNewPassword(user.email, newPassword)
                 .then(() => {
-                  logger.info(`${getClientIp(req)} successfully reset password`);
+                  logger.info(`${getClientIp(req)} reset password`);
                   return res.render('info', {
                     title: 'Reset password',
-                    header: 'Password successfully reset!',
+                    header: 'Password reset!',
                     message: "An email with your new password has been sent. Don't forget to check your spam folder if it isn't in your inbox!",
                   });
                 })
@@ -175,7 +174,7 @@ function setupRoutes(app, db, emailer) {
       const { currentPassword, newPassword, newPasswordAgain } = req.body;
 
       if (newPassword !== newPasswordAgain) {
-        logger.info(`${getClientIp(req)} tried to change password with mismatching new passwords`);
+        logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to change password: New password doesn't match`);
         return res.render('error', {
           message: 'New password does not match!',
           goBackUrl: '/change_password.html',
@@ -183,7 +182,7 @@ function setupRoutes(app, db, emailer) {
       }
 
       if (!isValidPassword(newPassword)) {
-        logger.info(`${getClientIp(req)} tried to change password with invalid new password`);
+        logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to change password: Invalid new password`);
         return res.render('error', {
           message: 'Passwords must be at least 6 characters long!',
           goBackUrl: '/change_password.html',
@@ -200,11 +199,11 @@ function setupRoutes(app, db, emailer) {
                 // FIXME: show a success toast/page and give warning of redirect
                 req.logout();
 
-                logger.info(`${getClientIp(req)} successfully changed password`);
+                logger.info(`${getClientIp(req)} ('${req.user.username}') changed password`);
 
                 res.render('info', {
                   title: 'Change password',
-                  header: 'Password successfully changed!',
+                  header: 'Password changed!',
                   message: 'You have been automatically logged out. Press the button below to go back to the main page and log back in!',
                 });
               })
@@ -217,7 +216,7 @@ function setupRoutes(app, db, emailer) {
               });
           }
 
-          logger.warn(`${getClientIp(req)} tried to change password with invalid current password`);
+          logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to change password: Incorrect current password`);
           return res.render('error', {
             message: 'Incorrect password!',
             goBackUrl: '/change_password.html',
@@ -235,7 +234,7 @@ function setupRoutes(app, db, emailer) {
       let { userInput } = req.body;
 
       if (!isValidComment(userInput)) {
-        logger.warn(`${getClientIp(req)} ('${req.user.username}') tried to make an invalid post`);
+        logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to make post: Invalid post`);
         res.json({ error: 'Invalid post!' });
         return;
       }
@@ -244,7 +243,7 @@ function setupRoutes(app, db, emailer) {
 
       db.makePost(userId, userInput)
         .then((post) => {
-          logger.info(`${getClientIp(req)} ('${req.user.username}') successfully made post #${post.id}`);
+          logger.info(`${getClientIp(req)} ('${req.user.username}') made post #${post.id}`);
 
           const data = {
             userId,
@@ -266,7 +265,7 @@ function setupRoutes(app, db, emailer) {
       let { editText } = req.body;
 
       if (!isValidComment(editText)) {
-        logger.warn(`${getClientIp(req)} ('${req.user.username}') tried to make an invalid edit on post #${postId}`);
+        logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to edit post #${postId}: Invalid edit`);
         return res.json({ error: 'Invalid edit!' });
       }
 
@@ -275,13 +274,13 @@ function setupRoutes(app, db, emailer) {
       return db.findPost(postId)
         .then((post) => {
           if (post.user_id !== req.user.id) {
-            logger.warn(`${getClientIp(req)} ('${req.user.username}') tried to edit post #${postId}, which belongs to another user`);
+            logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to edit post #${postId}: Post belongs to another user. Note that this is highly suspicious behavior.`);
             return res.json({ error: "You can't edit other users' posts!" });
           }
 
           return db.editPost(postId, editText)
             .then((editedPost) => {
-              logger.info(`${getClientIp(req)} ('${req.user.username}') successfully edited post #${postId}`);
+              logger.info(`${getClientIp(req)} ('${req.user.username}') edited post #${postId}`);
               return res.json(editedPost);
             })
             .catch((err) => {
@@ -299,7 +298,7 @@ function setupRoutes(app, db, emailer) {
     .get(ensureAuthenticated, (req, res) => {
       db.getPosts()
         .then((posts) => {
-          logger.info(`${getClientIp(req)} ('${req.user.username}') successfully got all posts`);
+          logger.info(`${getClientIp(req)} ('${req.user.username}') got all posts`);
 
           const data = {
             userId: req.user.id,
@@ -321,13 +320,13 @@ function setupRoutes(app, db, emailer) {
       db.findPost(postId)
         .then((post) => {
           if (post.user_id !== req.user.id) {
-            logger.warn(`${getClientIp(req)} ('${req.user.username}') tried to delete post #${postId}, which belongs to another user`);
+            logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to delete post #${postId}: Post belongs to another user. Note that this is highly suspicious behavior.`);
             return res.json({ error: "You can't delete other users' posts!" });
           }
 
           return db.deletePost(postId)
             .then((success) => {
-              logger.info(`${getClientIp(req)} ('${req.user.username}') successfully deleted post #${postId}`);
+              logger.info(`${getClientIp(req)} ('${req.user.username}') deleted post #${postId}`);
               return res.json(success);
             })
             .catch((err) => {
@@ -347,7 +346,7 @@ function setupRoutes(app, db, emailer) {
 
       req.logout();
 
-      logger.info(`${getClientIp(req)} ('${username}') successfully logged out`);
+      logger.info(`${getClientIp(req)} ('${username}') logged out`);
 
       // We don't actually redirect because we use jQuery ajax in the client
       // side, and handling "real" redirects with that is a mess.

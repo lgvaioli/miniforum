@@ -17,7 +17,7 @@ function sendNewPassword(userEmail, newPassword) {
 
     sgMail.send(msg)
       .then(() => {
-        resolve('Email successfully sent');
+        resolve('Email sent');
       })
       .catch((err) => {
         reject(err.response.body);

@@ -77,7 +77,7 @@ $(document).ready(() => {
         $(`#post_${postId}`).toggle();
         $(`#editable_${postId}`).toggle();
 
-        Toast.success(`Successfully updated post #${postId}!`);
+        Toast.success(`Updated post #${postId}!`);
       },
       error: (err) => {
         Toast.failure('Error: Could not edit post. Check browser console for details');

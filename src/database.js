@@ -42,7 +42,7 @@ function getDatabase() {
         return reject(errMsg);
       }
 
-      logger.info('Client successfully connected to database');
+      logger.info('Database client connected to database');
 
       if (!database) {
         database = {
@@ -391,13 +391,13 @@ function closeDatabase() {
         }
 
         client = null;
-        const msg = 'Successfully disconnected database client';
+        const msg = 'Disconnected database client';
         logger.info(msg);
         return resolve(msg);
       });
     }
 
-    const msg = 'Tried to disconnect uninitialized database client';
+    const msg = 'Failed to disconnect database client: Database client was uninitialized';
     logger.warn(msg);
     return reject(msg);
   });
