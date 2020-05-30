@@ -87,9 +87,9 @@ SESSION_SECRET=<some strong password>
 # Emailer config (optional) #
 #############################
 
-EMAILER_NAME='XYZ Miniforum'
-EMAILER_VALIDATED_EMAIL=sendgrid_validated_email@gmail.com
-SENDGRID_API_KEY='your_sendgrid_api_key_here'
+EMAILER_NAME=<some name to show in Miniforum email subjects>
+EMAILER_VALIDATED_EMAIL=<sendgrid validated email>
+SENDGRID_API_KEY=<'your sendgrid api key, do not omit the single quotes'>
 
 
 #############################
@@ -104,7 +104,10 @@ TEST_USERNAME=<your first test user username, read further down below>
 TEST_PASSWORD=<your first test user password, read further down below>
 TEST_USERNAME_2=<your second test user username, read further down below>
 TEST_PASSWORD_2=<your second test user password, read further down below>
+DATABASE_TEST_URL=postgresql://<postgres_user>:<postgres_password>@<host>:<port>/<database_name>
 ```
+
+Config variables marked as *(optional)* should be omitted if you don't plan to use the feature in question, e.g., if you don't plan to test Miniforum, you should omit the entire *Testing config (optional)* section in your *.env* file.
 
 Miniforum implements basic password reset by sending you an email with a new, randomly
 generated password using [Sendgrid](https://sendgrid.com/). If you choose to use this feature,
@@ -126,14 +129,21 @@ npm start
 If everything went fine, you should see something like this in the console:
 
 ```
-Connected successfully to database!
-Server listening at port 3000...
+info: Server listening at port 3000... {"service":"Miniforum","timestamp":"2020-05-30 17:48:21"}
+info: Connected to database 'postgresql://user:password@host:port/database' {"service":"Miniforum","timestamp":"2020-05-30 17:48:21"}
 ```
 
 Now all you have to do is launch your browser and go to *http://localhost:3000/* and you should
 see Miniforum in action. If you do: congrats! You have successfully deployed Miniforum to localhost. Keep reading on if you want to run the test suite.
 
 #### Testing in localhost
+
+##### Creating additional test database in PostgreSQL #####
+
+In order to run all of Miniforum's tests, besides your regular database (i.e. the one you configured with ```DATABASE_URL```), you need to create another, identical database. You can easily do this by first creating the database with pgAdmin and then running the *postgresql/createTables.sql* and Connect PG Simple's [*table.sql*](https://github.com/voxpelli/node-connect-pg-simple/blob/HEAD/table.sql) scripts. Then, you just need to add your new database's URL to the *.env* file, like so:
+```
+DATABASE_TEST_URL=<your new test database URL>
+```
 
 ##### Setting up testing users in Miniforum #####
 

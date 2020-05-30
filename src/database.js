@@ -3,6 +3,9 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const generatePassword = require('password-generator');
+const { getLogger } = require('./logger');
+
+const logger = getLogger();
 
 class Database {
   /**
@@ -21,12 +24,25 @@ class Database {
       connectionString: databaseUrl,
       ssl: noSsl ? false : { rejectUnauthorized: false },
     });
+
+    /**
+     * Make dumb query to check if we successfully connected to the database.
+     * I couldn't find a proper way to do this; PG's docs kinda suck.
+     */
+    this.pool.query('SELECT NOW()', (err) => {
+      if (err) {
+        logger.error(`Could not connect to database '${databaseUrl}'; check error below for more info`);
+        logger.error(err.toString());
+      } else {
+        logger.info(`Connected to database '${databaseUrl}'`);
+      }
+    });
   }
 
   /**
    * Finds a user in the database by ID.
    * @param {Number} id The user ID.
-   * @returns {Promise} Resolves to an user row { id, username, password, email } on success,
+   * @returns {Promise} Resolves to a user row { id, username, password, email } on success,
    * or rejects with an Error.
    */
   findUserById(id) {
@@ -55,7 +71,7 @@ class Database {
   /**
    * Finds a user in the database by name.
    * @param {String} name The user name.
-   * @returns {Promise} Resolves to an user row { id, username, password, email } on success,
+   * @returns {Promise} Resolves to a user row { id, username, password, email } on success,
    * or rejects with an Error.
    */
   findUserByName(name) {
@@ -82,9 +98,9 @@ class Database {
   }
 
   /**
-   * Finds a user in the database by ID.
-   * @param {Object} newUser New user to create; must be an object { username, password, email }.
-   * @returns {Promise} Resolves to an user row { id, username, password, email } on success,
+   * Creates a new user in the database.
+   * @param {Object} newUser New user data, must be an object { username, password, email }.
+   * @returns {Promise} Resolves to a user row { id, username, password, email } on success,
    * or rejects with an Error.
    */
   createUser(newUser) {
@@ -326,7 +342,7 @@ class Database {
   }
 
   /**
-   * Clears (deletes) all posts from the database.
+   * Clears (deletes) all posts from the database. Useful for testing.
    * @returns {Promise} Resolves to a success string if successful, or rejects with an Error.
    */
   clearPosts() {
@@ -337,6 +353,28 @@ class Database {
         }
 
         return resolve('cleared posts');
+      });
+    });
+  }
+
+  /**
+   * Clears (deletes) all users and posts from the database. Useful for testing.
+   * @returns {Promise} Resolves to a success string if successful, or rejects with an Error.
+   */
+  clearAll() {
+    return new Promise((resolve, reject) => {
+      this.pool.query('DELETE FROM posts', (err) => {
+        if (err) {
+          return reject(err);
+        }
+
+        return this.pool.query('DELETE FROM users', (err2) => {
+          if (err2) {
+            return reject(err2);
+          }
+
+          return resolve('cleared all');
+        });
       });
     });
   }
