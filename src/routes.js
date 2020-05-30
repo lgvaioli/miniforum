@@ -66,33 +66,30 @@ function setupRoutes(app, db, emailer) {
 
   app.route('/api/newAccount')
     .post((req, res) => {
-      const username = req.body.accountUsername;
-      const email = req.body.accountEmail;
-      const password = req.body.accountPassword;
+      const newUser = {
+        username: req.body.accountUsername,
+        email: req.body.accountEmail,
+        password: req.body.accountPassword,
+      };
 
-      if (!isValidUsername(username)) {
-        logger.warn(`${getClientIp(req)} failed to create new account with username '${username}': Invalid username`);
+      if (!isValidUsername(newUser.username)) {
+        logger.warn(`${getClientIp(req)} failed to create new account with username '${newUser.username}': Invalid username`);
         return res.render('error', { message: 'Invalid username!' });
       }
 
-      if (!isValidEmail(email)) {
-        logger.warn(`${getClientIp(req)} failed to create new account with username '${username}' and email '${email}': Invalid email`);
+      if (!isValidEmail(newUser.email)) {
+        logger.warn(`${getClientIp(req)} failed to create new account with username '${newUser.username}' and email '${newUser.email}': Invalid email`);
         return res.render('error', { message: 'Invalid email!' });
       }
 
-      if (!isValidPassword(password)) {
+      if (!isValidPassword(newUser.password)) {
         logger.warn(`${getClientIp(req)} failed to create new account: Invalid password`);
         return res.render('error', { message: 'Passwords must be at least 6 characters long!' });
       }
 
-      return db.createUser(username, email, password)
+      return db.createUser(newUser)
+        // eslint-disable-next-line arrow-body-style
         .then((user) => {
-          // User already existed, render an error template and return
-          if (!user) {
-            logger.warn(`${getClientIp(req)} failed to create new account with username '${username}' and email '${email}': Username taken`);
-            return res.render('error', { message: 'Username taken!' });
-          }
-
           // User didn't exist, log him in
           return req.login(user, (err) => {
             if (err) {
@@ -100,12 +97,12 @@ function setupRoutes(app, db, emailer) {
               return res.redirect(NEW_ACCOUNT_FAILURE_REDIRECT_URL);
             }
 
-            logger.info(`${getClientIp(req)} created new account with username '${username}' and email '${email}'`);
+            logger.info(`${getClientIp(req)} created new account with username '${newUser.username}' and email '${newUser.email}'`);
             return res.redirect(NEW_ACCOUNT_SUCCESS_REDIRECT_URL);
           });
         })
         .catch((err) => {
-          logger.error(`${getClientIp(req)} db.createUser error: ${err}`);
+          logger.warn(`${getClientIp(req)} failed to create new account: ${err}`);
           return res.render('error', { message: err });
         });
     });
@@ -132,11 +129,6 @@ function setupRoutes(app, db, emailer) {
 
       return db.findUserByName(username)
         .then((user) => {
-          if (!user) {
-            logger.warn(`${getClientIp(req)} failed to reset password with username '${username}': User doesn't exist`);
-            return res.render('error', { message: "User doesn't exist!" });
-          }
-
           if (user.email !== email) {
             logger.warn(`${getClientIp(req)} failed to reset password with username '${username}' and email '${email}': Email doesn't match current email ('${user.email}')`);
             return res.render('error', { message: "Email doesn't match current email!" });
@@ -154,17 +146,17 @@ function setupRoutes(app, db, emailer) {
                   });
                 })
                 .catch((err) => {
-                  logger.error(`${getClientIp(req)} emailer.sendNewPassword error: ${err}`);
+                  logger.warn(`${getClientIp(req)} failed to reset password: ${err}`);
                   return res.render('error', { message: err });
                 });
             })
             .catch((err) => {
-              logger.error(`${getClientIp(req)} db.resetPassword error: ${err}`);
+              logger.warn(`${getClientIp(req)} failed to reset password: ${err}`);
               return res.render('error', { message: err });
             });
         })
         .catch((err) => {
-          logger.error(`${getClientIp(req)} db.findUserByName error: ${err}`);
+          logger.warn(`${getClientIp(req)} failed to reset password: ${err}`);
           return res.render('error', { message: err });
         });
     });

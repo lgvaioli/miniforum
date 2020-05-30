@@ -3,14 +3,14 @@ require('dotenv').config();
 const puppeteer = require('puppeteer');
 const faker = require('faker');
 const { automaton } = require('./automaton');
-const { getDatabase } = require('../src/database');
+const { Database } = require('../src/database');
 const { POST_MAXLENGTH } = require('../public/shared_globals').SHARED_GLOBALS;
 
 jest.setTimeout(parseInt(process.env.JEST_TIMEOUT, 10));
 
 let browser;
 let page;
-let database;
+const database = new Database(process.env.DATABASE_URL);
 const BASE_URL = process.env.TEST_BASEURL_NOPORT + process.env.PORT;
 
 const routes = {
@@ -358,7 +358,6 @@ describe('Character counting test', () => {
 describe('Posting tests', () => {
   // For simplicity's sake, clear database of all posts before each test
   beforeEach(async () => {
-    database = await getDatabase();
     await database.clearPosts();
   });
 
@@ -427,7 +426,6 @@ describe('Posting tests', () => {
 describe('API tests', () => {
   // For simplicity's sake, clear database of all posts before each test
   beforeEach(async () => {
-    database = await getDatabase();
     await database.clearPosts();
   });
 
