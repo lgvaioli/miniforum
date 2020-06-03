@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  app:
+    image: node:12-alpine
+    command: sh -c "npm install && npm start"
+    ports:
+      - $PORT:$PORT
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - /app/node_modules/
+    environment:
+      # FIXME: There's gotta be a better way to do this...
+      BCRYPT_SALTROUNDS: $BCRYPT_SALTROUNDS
+      SESSION_SECRET: $SESSION_SECRET
+      DATABASE_URL: $DATABASE_URL
+      DATABASE_TEST_URL: $DATABASE_TEST_URL
+      DATABASE_NO_SSL: $DATABASE_NO_SSL
+      EMAILER_NAME: $EMAILER_NAME
+      EMAILER_VALIDATED_EMAIL: $EMAILER_VALIDATED_EMAIL
+      SENDGRID_API_KEY: $SENDGRID_API_KEY
+      PUPPETEER_BROWSER: $PUPPETEER_BROWSER
+      PUPPETEER_SLOWMO: $PUPPETEER_SLOWMO
+      PUPPETEER_HEADLESS_SLOWMO: $PUPPETEER_HEADLESS_SLOWMO
+      JEST_TIMEOUT: $JEST_TIMEOUT
+      TEST_BASEURL_NOPORT: $TEST_BASEURL_NOPORT
+      TEST_USERNAME: $TEST_USERNAME
+      TEST_PASSWORD: $TEST_PASSWORD
+      TEST_USERNAME_2: $TEST_USERNAME_2
+      TEST_PASSWORD_2: $TEST_PASSWORD_2
+      PORT: $PORT
+      PUBLIC_DIR: $PUBLIC_DIR
+      VIEWS_DIR: $VIEWS_DIR
+      NODE_ENV: $NODE_ENV
+
+  postgres:
+    image: postgres:12
+    volumes:
+      - miniforum-postgres-data:/var/lib/postgresql/data
+      - ./postgresql/:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+
+volumes:
+  miniforum-postgres-data:

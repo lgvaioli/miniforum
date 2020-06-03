@@ -19,24 +19,18 @@ function getLogger() {
         /**
          * Write all logs with level `info` and below to 'general.log'.
          * Write all logs error (and below) to 'error.log'.
+         * Write everything to console.
          */
         new transports.File({ filename: 'errors.log', level: 'error' }),
         new transports.File({ filename: 'general.log' }),
+        new transports.Console({
+          format: format.combine(
+            format.colorize(),
+            format.simple(),
+          ),
+        }),
       ],
     });
-
-    /**
-     * If we're not in production then **ALSO** log to the console
-     * with the colorized simple format.
-     */
-    if (process.env.NODE_ENV !== 'production') {
-      logger.add(new transports.Console({
-        format: format.combine(
-          format.colorize(),
-          format.simple(),
-        ),
-      }));
-    }
   }
 
   return logger;

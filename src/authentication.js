@@ -21,6 +21,30 @@ function setupAuthentication(app, db) {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  /**
+   * Graceful error handling middleware. I ran into a nasty deserializeUser "bug" (not technically
+   * a bug, just... awful behavior): If a logged-in user is removed from the database and then
+   * tries to go to the page without deleting his cookie, deserializeUser fails (obviously, because
+   * the user no longer exists in the database so findUserById rejects with an error) and an
+   * ugly HTML stacktrace is returned to the user.
+   * With this middleware, the user is forcefully logged out, and redirected to the login page.
+   */
+  app.use((err, req, res, next) => {
+    if (err) {
+      req.logout();
+
+      // Avoids infinite loops
+      if (req.originalUrl === '/') {
+        next();
+      } else {
+        // res.redirect('/');
+        res.render('error', { message: err });
+      }
+    } else {
+      next();
+    }
+  });
+
   // Passport (de)serialization
   passport.serializeUser((user, done) => {
     done(null, user.id);
