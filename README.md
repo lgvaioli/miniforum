@@ -42,7 +42,7 @@ NODE_ENV=production
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=<strong password>
 DATABASE_URL=postgresql://postgres:<strong password>@postgres:5432/postgres
-DATABASE_TEST_URL=postgresql://postgres:9UTyz5JpYjhbK8tlnoVZ@localhost:6000/postgres
+DATABASE_TEST_URL=postgresql://postgres:<strong password>@localhost:6000/postgres
 LOCALHOST_DB_BINDPORT=6000
 DATABASE_NO_SSL=true
 
