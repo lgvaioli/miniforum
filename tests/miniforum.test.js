@@ -10,25 +10,38 @@ jest.setTimeout(parseInt(process.env.JEST_TIMEOUT, 10));
 
 let browser;
 let page;
-const database = new Database(process.env.DATABASE_URL);
-const BASE_URL = process.env.TEST_BASEURL_NOPORT + process.env.PORT;
+const database = new Database(process.env.DATABASE_TEST_URL);
+const BASE_URL = `http://localhost:${process.env.PORT}`;
 
 const routes = {
   loginUrl: BASE_URL,
 };
 
 const validUser = {
-  username: process.env.TEST_USERNAME,
-  password: process.env.TEST_PASSWORD,
+  username: 'Test_Username',
+  email: 'Test_Username@Test_Username.com',
+  password: 'Test_Password',
 };
 
 const anotherValidUser = {
-  username: process.env.TEST_USERNAME_2,
-  password: process.env.TEST_PASSWORD_2,
+  username: 'Test_Username_2',
+  email: 'Test_Username_2@Test_Username_2.com',
+  password: 'Test_Password_2',
 };
 
 describe('Login form tests', () => {
   beforeAll(async () => {
+    /**
+     * Clears (i.e. deletes users and posts) the whole database. If this and the following
+     * user creation fails we're screwed anyway, so that's why we don't bother to catch
+     * errors.
+     */
+    await database.clearAll();
+
+    // Create a couple of valid users
+    await database.createUser(validUser);
+    await database.createUser(anotherValidUser);
+
     // First suite launches browser and creates page.
     // Note that I set a slowMo of 3 ms when running in headless mode, because
     // otherwise Puppeteer seems to be too fast for its own good and the tests
@@ -62,7 +75,7 @@ describe('Login form tests', () => {
 
     // Set Puppeteer's default timeout to 5 seconds; the default 30 seconds is
     // just obscene (at least for localhost).
-    await page.setDefaultTimeout(5000);
+    await page.setDefaultTimeout(process.env.PUPPETEER_TIMEOUT);
   });
 
   test('logins with no username and no password', async () => {
@@ -429,16 +442,10 @@ describe('API tests', () => {
     await database.clearPosts();
   });
 
-  /**
-   * Last suite must close the Puppeteer browser and database connection!
-   * Note that the database singleton is absolutely evil and we should probably
-   * get rid of it as soon as possible. A database singleton sounds like a good
-   * idea until you actually try to implement testing...
-   * Long story short: until we get rid of the wicked database singleton, we must
-   * database.close ONLY in the last suite which uses the database.
-   */
+  // Last suite closes and cleans up stuff
   afterAll(async () => {
     await browser.close();
+    await database.clearAll();
     await database.close();
   });
 

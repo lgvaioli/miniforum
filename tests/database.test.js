@@ -19,23 +19,20 @@ function createFakeUser() {
 
 describe('Database class tests', () => {
   // Sets up test database before tests are run
-  beforeAll(() => {
-    /**
-     * FIXME: maybe we can programatically create this database if it doesn't exist?
-     * It would certainly be better than having the programmer user manually creating it!
-     */
+  beforeAll(async () => {
     testDatabase = new Database(process.env.DATABASE_TEST_URL);
 
     /**
      * Clear database of users and posts, in the incredibly rare albeit possible
      * situation where faker generates clashing users.
      */
-    testDatabase.clearAll();
+    await testDatabase.clearAll();
   });
 
   // Closes database connection after all tests are run
-  afterAll(() => {
-    testDatabase.close();
+  afterAll(async () => {
+    await testDatabase.clearAll();
+    await testDatabase.close();
   });
 
   test('createUser', () => {

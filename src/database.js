@@ -2,14 +2,12 @@ require('dotenv').config();
 
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-const generatePassword = require('password-generator');
-const { getLogger } = require('./logger');
-
-const logger = getLogger();
+const faker = require('faker');
 
 class Database {
   /**
-   * Class constructor; creates a new database connection.
+   * Class constructor; creates a new database connection. You should immediately
+   * call isConnected after this, to ensure that the database is properly connected.
    * @param {String} databaseUrl A database URL to connect to.
    * See https://www.npmjs.com/package/pg-connection-string for more info.
    */
@@ -24,18 +22,25 @@ class Database {
       connectionString: databaseUrl,
       ssl: noSsl ? false : { rejectUnauthorized: false },
     });
+  }
 
-    /**
-     * Make dumb query to check if we successfully connected to the database.
-     * I couldn't find a proper way to do this; PG's docs kinda suck.
-     */
-    this.pool.query('SELECT NOW()', (err) => {
-      if (err) {
-        logger.error(`Could not connect to database '${databaseUrl}'; check error below for more info`);
-        logger.error(err.toString());
-      } else {
-        logger.info(`Connected to database '${databaseUrl}'`);
-      }
+  /**
+   * Checks the database connection.
+   * @returns {Promise} Resolves to true if a connection is established, or rejects with an Error.
+   */
+  isConnected() {
+    return new Promise((resolve, reject) => {
+      /**
+       * Make dumb query to check if we successfully connected to the database.
+       * I couldn't find a proper way to do this; PG's docs kinda suck.
+       */
+      this.pool.query('SELECT NOW()', (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      });
     });
   }
 
@@ -176,11 +181,13 @@ class Database {
    */
   resetPassword(userId) {
     /**
-     * Default settings: memorable, 10 letters. It's not the strongest password
-     * in the world, but it's fine for a temporary password which the user
-     * should change right away anyway.
+     * Faker seems to generate decent enough passwords (16 characters long, alphanumeric, with
+     * some special characters). This is probably not ideal from a security point of view because
+     * faker is probably not truly random or whatever, but the fact is: 1) these passwords are
+     * probably stronger than 90% of actual internet passwords; 2) the user should change this
+     * to a password of his preference after logging in anyway.
      */
-    return this.changePassword(userId, generatePassword());
+    return this.changePassword(userId, faker.internet.password());
   }
 
   /**
