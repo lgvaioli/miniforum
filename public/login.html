@@ -7,38 +7,37 @@
   <link rel="stylesheet" type="text/css" href="css/login.css">
   <link href="https://fonts.googleapis.com/css2?family=Roboto" rel="stylesheet">
   <link rel="icon" href="./favicon.ico">
+  <link rel="stylesheet" href="./css/materialize_toast.css">
 </head>
 <body>
   <h1>Miniforum</h1>
   <h2>Login</h2>
-  <form id="loginForm" method="POST" action="/api/login">
-    <div class="formContainer">
-      <label>Username<input type="text" id="username" name="username" data-testid="loginUsername"></label>
-      <label>Password<input type="password" id="password" name="password" data-testid="loginPassword"></label>
-      <button type="submit" class="btn" data-testid="loginLoginBtn">Login</button>
-    </div>
-  </form>
+  <div class="formContainer">
+    <label>Username<input type="text" id="username" name="username" data-testid="loginUsername"></label>
+    <label>Password<input type="password" id="password" name="password" data-testid="loginPassword"></label>
+    <button type="submit" class="btn" id="loginBtn" data-testid="loginLoginBtn">Login</button>
+  </div>
 
   <h2>Don't have an account? Create one here!</h2>
-  <form id="accountForm" method="POST" action="/api/newAccount">
-    <div class="formContainer">
-      <label>Username<input type="text" id="accountUsername" data-testid="accountUsername" name="accountUsername"></label>
-      <label>Email<input type="text" id="accountEmail" data-testid="accountEmail" name="accountEmail"></label>
-      <label>Password<input type="password" id="accountPassword" data-testid="accountPassword" name="accountPassword"></label>
-      <button type="submit" class="btn" data-testid="createAccountBtn">Create account</button>
-    </div>
-  </form>
+  <div class="formContainer">
+    <label>Username<input type="text" id="accountUsername" data-testid="accountUsername" name="accountUsername"></label>
+    <label>Email<input type="text" id="accountEmail" data-testid="accountEmail" name="accountEmail"></label>
+    <label>Password<input type="password" id="accountPassword" data-testid="accountPassword" name="accountPassword"></label>
+    <button type="submit" class="btn" id="createAccountBtn" data-testid="createAccountBtn">Create account</button>
+  </div>
 
   <h2>Forgot your password? Reset it here!</h2>
-  <form id="resetPasswordForm" method="POST" action="/api/resetPassword">
-    <div class="formContainer">
-      <label>Username<input type="text" id="resetPasswordUsername" data-testid="resetPasswordUsername" name="resetPasswordUsername"></label>
-      <label>Email<input type="text" id="resetPasswordEmail" data-testid="resetPasswordEmail" name="resetPasswordEmail"></label>
-      <button type="submit" class="btn" data-testid="resetPasswordBtn">Reset password</button>
-    </div>
-  </form>
+  <div class="formContainer">
+    <label>Username<input type="text" id="resetPasswordUsername" data-testid="resetPasswordUsername" name="resetPasswordUsername"></label>
+    <label>Email<input type="text" id="resetPasswordEmail" data-testid="resetPasswordEmail" name="resetPasswordEmail"></label>
+    <button type="submit" class="btn" id="resetPasswordBtn" data-testid="resetPasswordBtn">Reset password</button>
+  </div>
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script>window.jQuery || document.write('<script src="./jquery-3.5.1.min.js"><\/script>')</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="./Toast.js"></script>
+  <script src="./shared_globals.js"></script>
+  <script src="./login.js"></script>
 </body>
 </html>

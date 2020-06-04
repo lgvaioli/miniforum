@@ -3,12 +3,10 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require('bcrypt');
 const connectPgSimple = require('connect-pg-simple');
-const { getLogger } = require('./logger');
-
-const logger = getLogger();
+const { REDIRECTS } = require('../public/shared_globals');
 
 // Takes express app and sets up authentication with Passport
-function setupAuthentication(app, db) {
+function setupAuthentication(app, database) {
   const connectPgSimpleStore = new (connectPgSimple(session))();
 
   app.use(session({
@@ -51,7 +49,8 @@ function setupAuthentication(app, db) {
   });
 
   passport.deserializeUser((id, done) => {
-    db.findUserById(id)
+    database
+      .findUserById(id)
       .then((user) => {
         done(null, user);
       })
@@ -63,7 +62,8 @@ function setupAuthentication(app, db) {
   // Passport local strategy
   passport.use(new LocalStrategy(
     ((username, password, done) => {
-      db.findUserByName(username)
+      database
+        .findUserByName(username)
         .then((user) => {
           if (!user) {
             return done(`failed to log in as '${username}': User doesn't exist`, false);
@@ -71,7 +71,6 @@ function setupAuthentication(app, db) {
 
           return bcrypt.compare(password, user.password, (err, match) => {
             if (err) {
-              logger.error(`bcrypt.compare error while trying to log in user '${username}': ${err}`);
               return done(err);
             }
 
@@ -82,12 +81,19 @@ function setupAuthentication(app, db) {
             return done(`failed to log in as user '${username}': Incorrect password`, false);
           });
         })
-        .catch((err) => {
-          logger.error(`db.findUserByName error while trying to log in user '${username}': ${err}`);
-          return done(err);
-        });
+        .catch((err) => done(err));
     }),
   ));
 }
 
+// Middleware which uses Passport's isAuthenticated to make sure a user is authenticated
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  return res.redirect(REDIRECTS.LOGIN.FAILURE);
+}
+
 exports.setupAuthentication = setupAuthentication;
+exports.ensureAuthenticated = ensureAuthenticated;

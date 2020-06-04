@@ -4,18 +4,15 @@ const puppeteer = require('puppeteer');
 const faker = require('faker');
 const { automaton } = require('./automaton');
 const { Database } = require('../src/database');
-const { POST_MAXLENGTH } = require('../public/shared_globals').SHARED_GLOBALS;
+const { POST_MAXLENGTH } = require('../public/shared_globals');
+const { ROUTES } = require('../public/shared_globals');
 
 jest.setTimeout(parseInt(process.env.JEST_TIMEOUT, 10));
 
 let browser;
 let page;
 const database = new Database(process.env.DATABASE_TEST_URL);
-const BASE_URL = `http://localhost:${process.env.PORT}`;
-
-const routes = {
-  loginUrl: BASE_URL,
-};
+const LOGIN_FULLURL = `http://localhost:${process.env.PORT}`;
 
 const validUser = {
   username: 'Test_Username',
@@ -79,61 +76,61 @@ describe('Login form tests', () => {
   });
 
   test('logins with no username and no password', async () => {
-    page = await automaton.login(page, routes.loginUrl, { username: null, password: null });
+    page = await automaton.login(page, LOGIN_FULLURL, { username: null, password: null });
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('logins with invalid username and no password', async () => {
-    page = await automaton.login(page, routes.loginUrl, {
+    page = await automaton.login(page, LOGIN_FULLURL, {
       username: faker.internet.userName(),
       password: null,
     });
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('logins with invalid username and invalid password', async () => {
-    page = await automaton.login(page, routes.loginUrl, {
+    page = await automaton.login(page, LOGIN_FULLURL, {
       username: faker.internet.userName(),
       password: faker.internet.password(),
     });
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('logins with valid username and no password', async () => {
-    page = await automaton.login(page, routes.loginUrl, {
+    page = await automaton.login(page, LOGIN_FULLURL, {
       username: validUser.username,
       password: null,
     });
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('logins with valid username and invalid password', async () => {
-    page = await automaton.login(page, routes.loginUrl, {
+    page = await automaton.login(page, LOGIN_FULLURL, {
       username: validUser.username,
       password: faker.internet.password(),
     });
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('logins with valid username and valid password', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser);
+    page = await automaton.login(page, LOGIN_FULLURL, validUser);
 
     // Wait for logout button. We'll take that as a sign that we're effectively logged in
     await page.waitForSelector('[data-testid="logoutBtn"]');
   });
 
   test('logins with valid username and valid password, then logouts', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser);
+    page = await automaton.login(page, LOGIN_FULLURL, validUser);
 
     // Wait for logout button and click
     await page.waitForSelector('[data-testid="logoutBtn"]');
@@ -147,19 +144,19 @@ describe('Login form tests', () => {
 describe('New account form tests', () => {
   test('creates new account with no input', async () => {
     // Go to login page
-    await page.goto(routes.loginUrl);
+    await page.goto(LOGIN_FULLURL);
 
     // Click "Create account" button
     await page.waitForSelector('[data-testid="createAccountBtn"]');
     await page.click('[data-testid="createAccountBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('creates new account with existing username and wrong email/password', async () => {
     // Go to login page
-    await page.goto(routes.loginUrl);
+    await page.goto(LOGIN_FULLURL);
 
     // Type in existing username
     await page.waitForSelector('[data-testid="accountUsername"]');
@@ -177,13 +174,13 @@ describe('New account form tests', () => {
     await page.waitForSelector('[data-testid="createAccountBtn"]');
     await page.click('[data-testid="createAccountBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('creates new account', async () => {
     // Go to login page
-    await page.goto(routes.loginUrl);
+    await page.goto(LOGIN_FULLURL);
 
     // Type in username
     await page.waitForSelector('[data-testid="accountUsername"]');
@@ -210,19 +207,19 @@ describe('New account form tests', () => {
 describe('Reset password form tests', () => {
   test('resets password with no input', async () => {
     // Go to login page
-    await page.goto(routes.loginUrl);
+    await page.goto(LOGIN_FULLURL);
 
     // Click 'Reset password' button
     await page.waitForSelector('[data-testid="resetPasswordBtn"]');
     await page.click('[data-testid="resetPasswordBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('resets password with invalid user', async () => {
     // Go to login page
-    await page.goto(routes.loginUrl);
+    await page.goto(LOGIN_FULLURL);
 
     // Type invalid user
     await page.waitForSelector('[data-testid="resetPasswordUsername"]');
@@ -236,13 +233,13 @@ describe('Reset password form tests', () => {
     await page.waitForSelector('[data-testid="resetPasswordBtn"]');
     await page.click('[data-testid="resetPasswordBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('resets password with valid user and invalid email', async () => {
     // Go to login page
-    await page.goto(routes.loginUrl);
+    await page.goto(LOGIN_FULLURL);
 
     // Type valid user
     await page.waitForSelector('[data-testid="resetPasswordUsername"]');
@@ -256,14 +253,14 @@ describe('Reset password form tests', () => {
     await page.waitForSelector('[data-testid="resetPasswordBtn"]');
     await page.click('[data-testid="resetPasswordBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 });
 
 describe('Change password form tests', () => {
   test('changes password with no input', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser);
+    page = await automaton.login(page, LOGIN_FULLURL, validUser);
 
     // Click 'Change password' button
     await page.waitForSelector('[data-testid="changePasswordBtn"]');
@@ -273,12 +270,12 @@ describe('Change password form tests', () => {
     await page.waitForSelector('[data-testid="changePasswordInnerBtn"]');
     await page.click('[data-testid="changePasswordInnerBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('changes password with wrong current password', async () => {
-    page = await automaton.login(page, routes.loginUrl, {
+    page = await automaton.login(page, LOGIN_FULLURL, {
       username: validUser.username,
       password: validUser.password,
     });
@@ -304,12 +301,12 @@ describe('Change password form tests', () => {
     await page.waitForSelector('[data-testid="changePasswordInnerBtn"]');
     await page.click('[data-testid="changePasswordInnerBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('changes password with new password mismatch', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser);
+    page = await automaton.login(page, LOGIN_FULLURL, validUser);
 
     // Click 'Change password' button
     await page.waitForSelector('[data-testid="changePasswordBtn"]');
@@ -331,25 +328,14 @@ describe('Change password form tests', () => {
     await page.waitForSelector('[data-testid="changePasswordInnerBtn"]');
     await page.click('[data-testid="changePasswordInnerBtn"]');
 
-    // Wait for error message
-    await page.waitForSelector('[data-testid="errorMsg"]');
+    // Wait for failure toast
+    await page.waitForSelector('[data-testid="toast-failure"]');
   });
 });
 
 describe('Character counting test', () => {
-  test('chars left with no input', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser);
-
-    // Get input counter num
-    const inputCounterEl = await page.$('[data-testid="inputCounterTest"]');
-    const inputCounterNum = Number(await page.evaluate((el) => el.textContent, inputCounterEl));
-
-    // Verify correct charsLeft
-    expect(inputCounterNum).toBe(POST_MAXLENGTH);
-  });
-
   test('chars left with some input', async () => {
-    page = await automaton.login(page, routes.loginUrl, validUser);
+    page = await automaton.login(page, LOGIN_FULLURL, validUser);
 
     // Type some text
     const exampleText = 'This is some example text';
@@ -375,7 +361,7 @@ describe('Posting tests', () => {
   });
 
   test('makes a post with valid input', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser, 'Posted with Puppeteer!');
+    page = await automaton.makePost(page, LOGIN_FULLURL, validUser, 'Posted with Puppeteer!');
 
     // Check that the post was actually made. Do note that this works only if there were no
     // previous posts.
@@ -383,21 +369,21 @@ describe('Posting tests', () => {
   });
 
   test('makes a post with no input', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser, null);
+    page = await automaton.makePost(page, LOGIN_FULLURL, validUser, null);
 
     // Wait for failure toast
     await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('makes a post with invalid input (only whitespace)', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser, '       ');
+    page = await automaton.makePost(page, LOGIN_FULLURL, validUser, '       ');
 
     // Wait for failure toast
     await page.waitForSelector('[data-testid="toast-failure"]');
   });
 
   test('deletes a post', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser,
+    page = await automaton.makePost(page, LOGIN_FULLURL, validUser,
       "Posted with Puppeteer; we're gonna delete this one!");
 
     // Wait for and click the first delete button on the page
@@ -409,7 +395,7 @@ describe('Posting tests', () => {
   });
 
   test('edits a post', async () => {
-    page = await automaton.makePost(page, routes.loginUrl, validUser,
+    page = await automaton.makePost(page, LOGIN_FULLURL, validUser,
       "Posted with Puppeteer; we're gonna edit this one!");
 
     // Wait for and click the edit button
@@ -451,7 +437,7 @@ describe('API tests', () => {
 
   test('deletes post from another user', async () => {
     // Make post as validUser
-    const data = await automaton.makePostReturnPostId(page, routes.loginUrl, validUser,
+    const data = await automaton.makePostReturnPostId(page, LOGIN_FULLURL, validUser,
       'Posted with Puppeteer!');
 
     let loggedInPage = data.page;
@@ -462,11 +448,14 @@ describe('API tests', () => {
     await loggedInPage.waitForSelector('[data-testid="loginUsername"]');
 
     // Log in as anotherValidUser
-    loggedInPage = await automaton.login(loggedInPage, routes.loginUrl, anotherValidUser);
+    loggedInPage = await automaton.login(loggedInPage, LOGIN_FULLURL, anotherValidUser);
     await loggedInPage.waitForSelector('[data-testid="logoutBtn"]');
 
     // Try to delete validUser's post
-    const fetchResult = await loggedInPage.evaluate((postId, deletePostRoute) => {
+    const fetchResult = await loggedInPage.evaluate((postId, postRoute) => {
+      /**
+       * WARNING! BROWSER CONTEXT! Node code, closure, etc., do NOT work here!
+       */
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -480,11 +469,11 @@ describe('API tests', () => {
         redirect: 'follow',
       };
 
-      return fetch(deletePostRoute, requestOptions)
+      return fetch(postRoute, requestOptions)
         .then((response) => response.text())
         .then((result) => result)
         .catch((err) => err);
-    }, data.postId, '/api/deletePost');
+    }, data.postId, ROUTES.POST);
 
     // FIXME: Brittle test; this string might change in the future!
     expect(fetchResult).toMatch(/.*You can't delete other users' posts.*/);
@@ -492,7 +481,7 @@ describe('API tests', () => {
 
   test('edits post from another user', async () => {
     // Make post as validUser
-    const data = await automaton.makePostReturnPostId(page, routes.loginUrl, validUser,
+    const data = await automaton.makePostReturnPostId(page, LOGIN_FULLURL, validUser,
       'Posted with Puppeteer!');
 
     let loggedInPage = data.page;
@@ -503,11 +492,14 @@ describe('API tests', () => {
     await loggedInPage.waitForSelector('[data-testid="loginUsername"]');
 
     // Log in as anotherValidUser
-    loggedInPage = await automaton.login(loggedInPage, routes.loginUrl, anotherValidUser);
+    loggedInPage = await automaton.login(loggedInPage, LOGIN_FULLURL, anotherValidUser);
     await loggedInPage.waitForSelector('[data-testid="logoutBtn"]');
 
     // Try to edit validUser's post
-    const fetchResult = await loggedInPage.evaluate((postId, editPostRoute) => {
+    const fetchResult = await loggedInPage.evaluate((postId, postRoute) => {
+      /**
+       * WARNING! BROWSER CONTEXT! Node code, closure, etc., do NOT work here!
+       */
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -516,17 +508,17 @@ describe('API tests', () => {
       urlencoded.append('editText', 'Edited a post from another user!');
 
       const requestOptions = {
-        method: 'POST',
+        method: 'PUT',
         headers: myHeaders,
         body: urlencoded,
         redirect: 'follow',
       };
 
-      return fetch(editPostRoute, requestOptions)
+      return fetch(postRoute, requestOptions)
         .then((response) => response.text())
         .then((result) => result)
         .catch((err) => err);
-    }, data.postId, '/api/editPost');
+    }, data.postId, ROUTES.POST);
 
     // FIXME: Brittle test; this string might change in the future!
     expect(fetchResult).toMatch(/.*You can't edit other users' posts*/);

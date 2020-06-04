@@ -45,7 +45,7 @@ body {
     border: none;
     border-radius: 5px;
     margin-bottom: $margin-default;
-    transition: $transition-default;
+    transition: background-color $transition-default;
 
     &:hover {
         background-color: $color-darker;
@@ -79,6 +79,7 @@ body {
     width: 300px;
     margin-left: auto;
     margin-right: auto;
+    text-align: center;
 
     input {
         margin-top: 10px;
@@ -99,7 +100,6 @@ body {
 
 input {
     padding: 5px;
-    transition: $transition-default;
     outline: none;
     border-radius: 10px;
     border: 2px solid $color-dark;

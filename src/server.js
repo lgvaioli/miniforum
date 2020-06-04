@@ -5,10 +5,11 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const { Database } = require('./database');
-const { setupRoutes } = require('./routes');
+const routersInit = require('./routes/routers');
 const { setupAuthentication } = require('./authentication');
 const { getEmailer } = require('./emailer');
 const { getLogger } = require('./logger');
+const { ROUTES } = require('../public/shared_globals');
 
 const logger = getLogger();
 
@@ -34,10 +35,21 @@ database
   .then(() => {
     logger.info(`Connected to database '${process.env.DATABASE_URL}'`);
 
-    // Set up authentication, emailer, and routes
+    // Set up authentication
     setupAuthentication(app, database);
+
+    // Set up emailer
     const emailer = process.env.SENDGRID_API_KEY ? getEmailer(process.env.SENDGRID_API_KEY) : null;
-    setupRoutes(app, database, emailer);
+
+    // Set up routes
+    const routers = routersInit(database, emailer);
+    app.use(ROUTES.HOME, routers.home);
+    app.use(ROUTES.FORUM, routers.forum);
+    app.use(ROUTES.LOGIN, routers.login);
+    app.use(ROUTES.LOGOUT, routers.logout);
+    app.use(ROUTES.USER, routers.user);
+    app.use(ROUTES.PASSWORD, routers.password);
+    app.use(ROUTES.POST, routers.post);
 
     app.listen(process.env.PORT, (listenErr) => {
       if (listenErr) {

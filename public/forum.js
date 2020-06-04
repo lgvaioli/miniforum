@@ -1,24 +1,17 @@
 /* eslint-disable no-undef */
-const BASE_URL = `${window.location.protocol}//${window.location.host}`;
-
-const routes = {
-  makePost: `${BASE_URL}/api/makePost`,
-  editPost: `${BASE_URL}/api/editPost`,
-  getPosts: `${BASE_URL}/api/getPosts`,
-  deletePost: `${BASE_URL}/api/deletePost`,
-  logout: `${BASE_URL}/api/logout`,
-};
-
 const HIDE_ANIMATION_DURATION = 300;
 
 $(document).ready(() => {
+  // Set default input counter value, from global variable
+  $('#input-counter').text(POST_MAXLENGTH);
+
   function deleteButtonCallback(event) {
     const postId = event.data;
 
     $.ajax({
       type: 'DELETE',
       contentType: 'application/json',
-      url: routes.deletePost,
+      url: BROWSER_ROUTES.POST,
       data: JSON.stringify({ postId }),
       dataType: 'json',
       success: (serverResponse) => {
@@ -52,9 +45,9 @@ $(document).ready(() => {
     const editText = $(`#editable_textarea_${postId}`).val();
 
     $.ajax({
-      type: 'POST',
+      type: 'PUT',
       contentType: 'application/json',
-      url: routes.editPost,
+      url: BROWSER_ROUTES.POST,
       data: JSON.stringify({ postId, editText }),
       dataType: 'json',
       success: (data) => {
@@ -101,13 +94,13 @@ $(document).ready(() => {
       'data-testid': 'editable_textarea_test',
     });
     $textarea.val(postText);
-    $textarea.attr('maxlength', SHARED_GLOBALS.POST_MAXLENGTH);
+    $textarea.attr('maxlength', POST_MAXLENGTH);
     $textarea.on('input', () => {
-      const charsLeft = SHARED_GLOBALS.POST_MAXLENGTH - $textarea.val().length;
+      const charsLeft = POST_MAXLENGTH - $textarea.val().length;
       $inputCounter.text(charsLeft);
     });
 
-    $inputCounter.text(SHARED_GLOBALS.POST_MAXLENGTH - $textarea.val().length);
+    $inputCounter.text(POST_MAXLENGTH - $textarea.val().length);
 
     const $cancelBtn = $('<button>', { class: 'btn cancel-btn' });
     $cancelBtn.text('Cancel');
@@ -217,7 +210,7 @@ $(document).ready(() => {
   function getPosts() {
     $.ajax({
       type: 'GET',
-      url: routes.getPosts,
+      url: BROWSER_ROUTES.POST,
       dataType: 'json',
       success: (data) => {
         if (data.error) {
@@ -253,7 +246,7 @@ $(document).ready(() => {
     $.ajax({
       type: 'POST',
       contentType: 'application/json',
-      url: routes.makePost,
+      url: BROWSER_ROUTES.POST,
       data: JSON.stringify({ userInput }),
       dataType: 'json',
       success: (data) => {
@@ -282,9 +275,9 @@ $(document).ready(() => {
 
   // User input counter
   $('#userInput')
-    .attr('maxlength', SHARED_GLOBALS.POST_MAXLENGTH)
+    .attr('maxlength', POST_MAXLENGTH)
     .on('input', () => {
-      const charsLeft = SHARED_GLOBALS.POST_MAXLENGTH - $('#userInput').val().length;
+      const charsLeft = POST_MAXLENGTH - $('#userInput').val().length;
       $('#input-counter').text(charsLeft);
     });
 
@@ -292,7 +285,7 @@ $(document).ready(() => {
   $('#logout-btn').on('click', () => {
     $.ajax({
       type: 'GET',
-      url: routes.logout,
+      url: BROWSER_ROUTES.LOGOUT,
       dataType: 'json',
       success: (data) => {
         if (data.redirect) {
