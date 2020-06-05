@@ -1,7 +1,9 @@
 /* eslint-disable no-undef */
 $(document).ready(() => {
-  // 'Login' button callback
-  $('#loginBtn').on('click', () => {
+  // 'Login' form submit callback
+  $('#loginForm').on('submit', (event) => {
+    event.preventDefault();
+
     const data = {
       username: $('#username').val(),
       password: $('#password').val(),
@@ -29,8 +31,10 @@ $(document).ready(() => {
     });
   });
 
-  // 'Create account' button callback
-  $('#createAccountBtn').on('click', () => {
+  // 'Create account' form submit callback
+  $('#accountForm').on('submit', (event) => {
+    event.preventDefault();
+
     const data = {
       accountUsername: $('#accountUsername').val(),
       accountEmail: $('#accountEmail').val(),
@@ -59,8 +63,10 @@ $(document).ready(() => {
     });
   });
 
-  // 'Reset password' button callback
-  $('#resetPasswordBtn').on('click', () => {
+  // 'Reset password' form submit callback
+  $('#resetPasswordForm').on('submit', (event) => {
+    event.preventDefault();
+
     const data = {
       resetPasswordUsername: $('#resetPasswordUsername').val(),
       resetPasswordEmail: $('#resetPasswordEmail').val(),

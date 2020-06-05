@@ -70,11 +70,30 @@ describe('Login form tests', () => {
 
     page = await browser.newPage();
 
-    // Set Puppeteer's default timeout to 5 seconds; the default 30 seconds is
-    // just obscene (at least for localhost).
+    /**
+     * Set Puppeteer's default timeout to 5 seconds; the default 30 seconds is
+     * just obscene (at least for localhost).
+     */
     await page.setDefaultTimeout(process.env.PUPPETEER_TIMEOUT);
   });
 
+  /**
+   * Regression test: When I stopped using <form>s because of their inability to handle
+   * anything but POST/GET, I inadvertently broke a nice behavior (which I personally use
+   * a LOT): Submit the form when pressing ENTER. This test checks that submission on
+   * ENTER works.
+   */
+  test('submits form on ENTER', async () => {
+    await page.goto(LOGIN_FULLURL);
+    const focusablesIds = ['loginUsername', 'loginPassword', 'loginLoginBtn'];
+    const failureId = 'toast-failure';
+    await automaton.checkSubmitFormOnEnter(page, focusablesIds, failureId);
+  });
+
+  /**
+   * FIXME: Maybe this separate form tests are overkill and could be made into one single
+   * 'tests login form'?
+   */
   test('logins with no username and no password', async () => {
     page = await automaton.login(page, LOGIN_FULLURL, { username: null, password: null });
 
@@ -142,6 +161,13 @@ describe('Login form tests', () => {
 });
 
 describe('New account form tests', () => {
+  test('submits form on ENTER', async () => {
+    await page.goto(LOGIN_FULLURL);
+    const focusablesIds = ['accountUsername', 'accountEmail', 'accountPassword', 'createAccountBtn'];
+    const failureId = 'toast-failure';
+    await automaton.checkSubmitFormOnEnter(page, focusablesIds, failureId);
+  });
+
   test('creates new account with no input', async () => {
     // Go to login page
     await page.goto(LOGIN_FULLURL);
@@ -205,6 +231,13 @@ describe('New account form tests', () => {
 });
 
 describe('Reset password form tests', () => {
+  test('submits form on ENTER', async () => {
+    await page.goto(LOGIN_FULLURL);
+    const focusablesIds = ['resetPasswordUsername', 'resetPasswordEmail', 'resetPasswordBtn'];
+    const failureId = 'toast-failure';
+    await automaton.checkSubmitFormOnEnter(page, focusablesIds, failureId);
+  });
+
   test('resets password with no input', async () => {
     // Go to login page
     await page.goto(LOGIN_FULLURL);

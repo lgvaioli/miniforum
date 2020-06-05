@@ -1,3 +1,12 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
+/**
+ * FIXME: This module should be refactored into a class with a nicer interface.
+ * There is a LOT of duplicate code in miniforum.test.js; the worst offenders are
+ * probably generic form testing (i.e. 'test that a failure toast shows up when I
+ * submit this without entering info' and so on).
+ */
+
 /**
  * Logins a user with Puppeteer. Returns a Promise which resolves to a new Puppeteer
  * Page after having (a)waited for username/password typing and clicking on the
@@ -67,8 +76,25 @@ async function automatonMakePostReturnPostId(page, loginUrl, user, postText) {
   };
 }
 
+/**
+ * Checks that a form submits when pressing ENTER.
+ * @param {Page} page An initialized Puppeteer Page.
+ * @param {Array} focusableArray An array of strings with data-testid's to focus and press ENTER on.
+ * These should be your inputs and submit button data-testid's.
+ * @param {String} failureId A string with the data-testid of the element which represents failure
+ * to submit a form.
+ */
+async function automatonCheckSubmitFormOnEnter(page, focusableArray, failureId) {
+  for (const focusable of focusableArray) {
+    await page.focus(`[data-testid="${focusable}"]`);
+    await page.keyboard.press('Enter');
+    await page.waitForSelector(`[data-testid="${failureId}"]`);
+  }
+}
+
 exports.automaton = {
   login: automatonLogin,
   makePost: automatonMakePost,
   makePostReturnPostId: automatonMakePostReturnPostId,
+  checkSubmitFormOnEnter: automatonCheckSubmitFormOnEnter,
 };
