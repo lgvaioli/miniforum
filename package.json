@@ -10,7 +10,7 @@
     "start": "node src/server.js",
     "lint": "npx eslint . --ext .js",
     "test": "npm run lint && jest --runInBand",
-    "docs": "npx jsdoc -d docs src/database.js"
+    "docs": "npx jsdoc -d docs src/database.js tests/automaton.js"
   },
   "jest": {
     "verbose": true

@@ -2,20 +2,9 @@ require('dotenv').config();
 
 const faker = require('faker');
 const { Database } = require('../src/database');
+const { Automaton } = require('./automaton');
 
 let testDatabase = null;
-
-/**
- * Creates a user object with faker.
- * @returns {Object} An object { username, password, email }.
- */
-function createFakeUser() {
-  return {
-    username: faker.internet.userName(),
-    email: faker.internet.email(),
-    password: faker.internet.password(),
-  };
-}
 
 describe('Database class tests', () => {
   // Sets up test database before tests are run
@@ -37,7 +26,7 @@ describe('Database class tests', () => {
 
   test('createUser', () => {
     // Create new user with createUser and check results
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -49,7 +38,7 @@ describe('Database class tests', () => {
 
   test('findUserById', () => {
     // Create new user and then look it up with findUserById
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -63,7 +52,7 @@ describe('Database class tests', () => {
 
   test('findUserByName', () => {
     // Create new user and then look it up with findUserByName
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -77,7 +66,7 @@ describe('Database class tests', () => {
 
   test('changePassword', () => {
     // Create new user and then change password
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
     const newPassword = faker.internet.password();
 
     return testDatabase
@@ -91,7 +80,7 @@ describe('Database class tests', () => {
 
   test('resetPassword', () => {
     // Create new user and then reset password
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     /**
      * We're not interested in the resolved value, we just wanna make sure that
@@ -104,7 +93,7 @@ describe('Database class tests', () => {
 
   test('comparePassword', () => {
     // Create new user
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -120,7 +109,7 @@ describe('Database class tests', () => {
 
   test('makePost', () => {
     // Create new user
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -136,7 +125,7 @@ describe('Database class tests', () => {
 
   test('findPost', () => {
     // Create new user
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -153,7 +142,7 @@ describe('Database class tests', () => {
 
   test('editPost', () => {
     // Create new user
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -176,7 +165,7 @@ describe('Database class tests', () => {
     await testDatabase.clearAll();
 
     // Create new user
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
@@ -197,7 +186,7 @@ describe('Database class tests', () => {
 
   test('deletePost', async () => {
     // Create new user
-    const newUser = createFakeUser();
+    const newUser = Automaton.createFakeUser();
 
     return testDatabase
       .createUser(newUser)
