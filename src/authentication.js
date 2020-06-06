@@ -3,7 +3,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require('bcrypt');
 const connectPgSimple = require('connect-pg-simple');
-const { REDIRECTS } = require('../public/shared_globals');
+const { REDIRECTS } = require('../public/js/shared_globals');
 
 // Takes express app and sets up authentication with Passport
 function setupAuthentication(app, database) {

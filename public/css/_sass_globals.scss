@@ -103,6 +103,7 @@ input {
     outline: none;
     border-radius: 10px;
     border: 2px solid $color-dark;
+    transition: border $transition-default;
 
     &:focus {
         border: 2px solid black;

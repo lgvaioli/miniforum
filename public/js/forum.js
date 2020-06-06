@@ -300,7 +300,7 @@ $(document).ready(() => {
 
   // Change password button
   $('#changePassword-btn').on('click', () => {
-    window.location.replace('/change_password.html');
+    window.location.replace(BROWSER_ROUTES.PASSWORD);
   });
 
   getPosts();

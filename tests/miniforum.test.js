@@ -4,8 +4,8 @@ const puppeteer = require('puppeteer');
 const faker = require('faker');
 const { Automaton } = require('./automaton');
 const { Database } = require('../src/database');
-const { POST_MAXLENGTH } = require('../public/shared_globals');
-const { ROUTES } = require('../public/shared_globals');
+const { POST_MAXLENGTH } = require('../public/js/shared_globals');
+const { ROUTES } = require('../public/js/shared_globals');
 
 jest.setTimeout(parseInt(process.env.JEST_TIMEOUT, 10));
 

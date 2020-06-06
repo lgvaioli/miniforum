@@ -3,7 +3,7 @@ const express = require('express');
 const passport = require('passport');
 const { getClientIp } = require('request-ip');
 const { getLogger } = require('../logger');
-const { REDIRECTS } = require('../../public/shared_globals');
+const { REDIRECTS } = require('../../public/js/shared_globals');
 
 const logger = getLogger();
 const router = express.Router();

@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const { getClientIp } = require('request-ip');
 const { getLogger } = require('../logger');
-const { REDIRECTS } = require('../../public/shared_globals');
+const { REDIRECTS } = require('../../public/js/shared_globals');
 const { ensureAuthenticated } = require('../authentication');
 
 const logger = getLogger();

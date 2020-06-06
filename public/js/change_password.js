@@ -24,13 +24,14 @@ $(document).ready(() => {
         }
 
         if (res.redirect) {
-          window.location.replace(res.redirect);
-
-          // FIXME: display flash success here
+          Toast.success('Password changed! Gonna redirect you so you can log back in', 4000);
+          setTimeout(() => {
+            window.location.replace(res.redirect);
+          }, 5000);
         }
       },
       error: (err) => {
-        Toast.failure(err);
+        Toast.failure(JSON.stringify(err));
       },
     });
   });

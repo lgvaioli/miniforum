@@ -12,11 +12,11 @@ const POST_MAXLENGTH = 255;
 const ROUTES = {
   HOME: '/',
   FORUM: '/forum',
-  LOGIN: '/api/login',
-  LOGOUT: '/api/logout',
-  USER: '/api/user',
-  PASSWORD: '/api/password',
-  POST: '/api/post',
+  LOGIN: '/login',
+  LOGOUT: '/logout',
+  USER: '/user',
+  PASSWORD: '/password',
+  POST: '/post',
 };
 
 let BROWSER_ROUTES;
@@ -39,7 +39,7 @@ const REDIRECTS = {
   },
 };
 
-// Only define FULL_ROUTES if in browser context
+// Only define BROWSER_ROUTES if in browser context
 if (typeof window !== 'undefined') {
   const BASE_URL = `${window.location.protocol}//${window.location.host}`;
 

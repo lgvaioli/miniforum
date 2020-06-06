@@ -6,7 +6,7 @@ const {
   isValidEmail,
   isValidPassword,
 } = require('../validation');
-const { REDIRECTS } = require('../../public/shared_globals');
+const { REDIRECTS } = require('../../public/js/shared_globals');
 const { getLogger } = require('../logger');
 
 const logger = getLogger();

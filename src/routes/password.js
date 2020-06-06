@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { getClientIp } = require('request-ip');
-const { REDIRECTS } = require('../../public/shared_globals');
+const { REDIRECTS } = require('../../public/js/shared_globals');
 const { getLogger } = require('../logger');
 const {
   isValidUsername,
@@ -14,6 +14,11 @@ const logger = getLogger();
 const router = express.Router();
 
 function init(database, emailer) {
+  // GET sends the 'Change password' page.
+  router.get('/', ensureAuthenticated, (req, res) => {
+    res.sendFile('html/change_password.html', { root: process.env.PUBLIC_DIR });
+  });
+
   // DELETE resets the password.
   router.delete('/', (req, res) => {
     if (!emailer) {
