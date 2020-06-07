@@ -1,15 +1,14 @@
-require('dotenv').config();
-
 const faker = require('faker');
 const { Database } = require('../src/database');
 const { Automaton } = require('./automaton');
+const { DATABASE_TEST_URL } = require('../src/globals');
 
 let testDatabase = null;
 
 describe('Database class tests', () => {
   // Sets up test database before tests are run
   beforeAll(async () => {
-    testDatabase = new Database(process.env.DATABASE_TEST_URL);
+    testDatabase = new Database(DATABASE_TEST_URL);
 
     /**
      * Clear database of users and posts, in the incredibly rare albeit possible

@@ -1,8 +1,7 @@
-require('dotenv').config();
-
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const faker = require('faker');
+const { DATABASE_NO_SSL, BCRYPT_SALTROUNDS } = require('./globals');
 
 class Database {
   /**
@@ -12,15 +11,9 @@ class Database {
    * See https://www.npmjs.com/package/pg-connection-string for more info.
    */
   constructor(databaseUrl) {
-    let noSsl = false;
-
-    if (process.env.DATABASE_NO_SSL && process.env.DATABASE_NO_SSL === 'true') {
-      noSsl = true;
-    }
-
     this.pool = new Pool({
       connectionString: databaseUrl,
-      ssl: noSsl ? false : { rejectUnauthorized: false },
+      ssl: DATABASE_NO_SSL ? false : { rejectUnauthorized: false },
     });
   }
 
@@ -115,7 +108,7 @@ class Database {
         // eslint-disable-next-line arrow-body-style
         .catch(() => {
           // User doesn't exist, create account. We store a hash instead of the plaintext password.
-          return bcrypt.hash(newUser.password, parseInt(process.env.BCRYPT_SALTROUNDS, 10),
+          return bcrypt.hash(newUser.password, BCRYPT_SALTROUNDS,
             (err, hash) => {
               if (err) {
                 return reject(err);
@@ -149,7 +142,7 @@ class Database {
     return new Promise((resolve, reject) => {
       this.findUserById(userId)
         .then((user) => {
-          bcrypt.hash(newPassword, parseInt(process.env.BCRYPT_SALTROUNDS, 10), (err, hash) => {
+          bcrypt.hash(newPassword, BCRYPT_SALTROUNDS, (err, hash) => {
             if (err) {
               return reject(err);
             }

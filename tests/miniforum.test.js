@@ -1,18 +1,27 @@
-require('dotenv').config();
-
 const puppeteer = require('puppeteer');
 const faker = require('faker');
 const { Automaton } = require('./automaton');
 const { Database } = require('../src/database');
-const { POST_MAXLENGTH } = require('../public/js/shared_globals');
-const { ROUTES } = require('../public/js/shared_globals');
+const {
+  POST_MAXLENGTH,
+  ROUTES,
+} = require('../public/js/shared_globals');
+const {
+  DATABASE_TEST_URL,
+  PUPPETEER_HEADLESS,
+  PUPPETEER_SLOWMO,
+  PUPPETEER_HEADLESS_SLOWMO,
+  PUPPETEER_TIMEOUT,
+  JEST_TIMEOUT,
+  PORT,
+} = require('../src/globals.js');
 
-jest.setTimeout(parseInt(process.env.JEST_TIMEOUT, 10));
+jest.setTimeout(JEST_TIMEOUT);
 
 let browser;
 let automaton;
-const database = new Database(process.env.DATABASE_TEST_URL);
-const LOGIN_FULLURL = `http://localhost:${process.env.PORT}`;
+const database = new Database(DATABASE_TEST_URL);
+const LOGIN_FULLURL = `http://localhost:${PORT}`;
 
 const validUser = {
   username: 'Test_Username',
@@ -70,23 +79,18 @@ describe('Login form tests', () => {
      * At the end of the day, the sad truth is that Puppeteer is just flaky.
      * Abandon all hope, ye who enter here.
      */
-    let runHeadless = true;
-
-    if (process.env.PUPPETEER_BROWSER && process.env.PUPPETEER_BROWSER === 'true') {
-      runHeadless = false;
-    }
 
     const debugConfig = {
       headless: false,
-      slowMo: parseInt(process.env.PUPPETEER_SLOWMO, 10),
+      slowMo: PUPPETEER_SLOWMO,
     };
 
     const headlessConfig = {
       headless: true,
-      slowMo: parseInt(process.env.PUPPETEER_HEADLESS_SLOWMO, 10),
+      slowMo: PUPPETEER_HEADLESS_SLOWMO,
     };
 
-    browser = await puppeteer.launch(runHeadless ? headlessConfig : debugConfig);
+    browser = await puppeteer.launch(PUPPETEER_HEADLESS ? headlessConfig : debugConfig);
 
     const page = await browser.newPage();
 
@@ -94,7 +98,7 @@ describe('Login form tests', () => {
      * Set Puppeteer's default timeout to 5 seconds; the default 30 seconds is
      * just obscene (at least for localhost).
      */
-    await page.setDefaultTimeout(process.env.PUPPETEER_TIMEOUT);
+    await page.setDefaultTimeout(PUPPETEER_TIMEOUT);
 
     automaton = new Automaton(page, LOGIN_FULLURL);
   });

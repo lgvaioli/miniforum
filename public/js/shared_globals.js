@@ -1,4 +1,9 @@
+/* eslint-disable no-inner-declarations */
+/* eslint-disable global-require */
+/* eslint-disable max-len */
 /* eslint-disable no-unused-vars */
+// This is kind of a special file, so please be quiet, eslint
+
 /**
  * Globals shared among some JS files.
  * This file contains globals shared across both the front-end

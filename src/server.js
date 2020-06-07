@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Database } = require('./database');
@@ -8,6 +6,13 @@ const { setupAuthentication } = require('./authentication');
 const { getEmailer } = require('./emailer');
 const { getLogger } = require('./logger');
 const { ROUTES } = require('../public/js/shared_globals');
+const {
+  PUBLIC_DIR,
+  DATABASE_URL,
+  SENDGRID_API_KEY,
+  PORT,
+  VIEWS_DIR,
+} = require('./globals');
 
 const app = express();
 const logger = getLogger();
@@ -29,21 +34,25 @@ app.use(bodyParser.urlencoded({ extended: false })); // needed for Passport
  * to explicitly send html files because they are not public by default, but it also enforces
  * clean URLs. We don't expose *files*, we expose *services*.
  */
-app.use(express.static(`${process.env.PUBLIC_DIR}/css/`));
-app.use(express.static(`${process.env.PUBLIC_DIR}/js/`));
-app.use(express.static(`${process.env.PUBLIC_DIR}/res/`));
+app.use(express.static(`${PUBLIC_DIR}/css/`));
+app.use(express.static(`${PUBLIC_DIR}/js/`));
+app.use(express.static(`${PUBLIC_DIR}/res/`));
 
-const database = new Database(process.env.DATABASE_URL);
+// Pug templates
+app.set('views', VIEWS_DIR);
+app.set('view engine', 'pug');
+
+const database = new Database(DATABASE_URL);
 database
   .isConnected()
   .then(() => {
-    logger.info(`Connected to database '${process.env.DATABASE_URL}'`);
+    logger.info(`Connected to database '${DATABASE_URL}'`);
 
     // Set up authentication
     setupAuthentication(app, database);
 
     // Set up emailer
-    const emailer = process.env.SENDGRID_API_KEY ? getEmailer(process.env.SENDGRID_API_KEY) : null;
+    const emailer = SENDGRID_API_KEY ? getEmailer(SENDGRID_API_KEY) : null;
 
     // Set up routes
     const routers = routersInit(database, emailer);
@@ -57,14 +66,14 @@ database
 
     // 404 route
     app.use((req, res) => {
-      res.sendFile('html/404.html', { root: process.env.PUBLIC_DIR });
+      res.render('error', { message: 'Page not found!' });
     });
 
-    app.listen(process.env.PORT, (listenErr) => {
+    app.listen(PORT, (listenErr) => {
       if (listenErr) {
         return logger.error(`Could not start server: ${listenErr}`);
       }
-      return logger.info(`Server listening at port ${process.env.PORT}...`);
+      return logger.info(`Server listening at port ${PORT}...`);
     });
   })
   .catch((err) => {
@@ -72,16 +81,16 @@ database
      * Critical error: Could not connect to database. Set up a catch-all route to
      * display a message error.
      */
-    logger.error(`Could not connect to database '${process.env.DATABASE_URL}': ${err}`);
+    logger.error(`Could not connect to database '${DATABASE_URL}': ${err}`);
 
     app.get('*', (req, res) => {
       res.render('error', { message: 'Critical error: Could not connect to database!' });
     });
 
-    app.listen(process.env.PORT, (listenErr) => {
+    app.listen(PORT, (listenErr) => {
       if (listenErr) {
         return logger.error(`Could not start server: ${listenErr}`);
       }
-      return logger.info(`Server listening at port ${process.env.PORT}...`);
+      return logger.info(`Server listening at port ${PORT}...`);
     });
   });

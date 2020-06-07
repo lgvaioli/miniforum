@@ -9,11 +9,11 @@ while to load because it's hosted on Heroku's free plan).
 
 Miniforum is designed to be easily deployable to Heroku, though deployment to localhost is also
 possible (and highly recommended for testing and goofing around with the code).
-You can deploy to localhost in two ways: manually (TODO: insert link here) or with Docker. Deploying with Docker is easier and is thus the recommended way of deploying to localhost.
+You can deploy to localhost in two ways: manually or with Docker. Deploying with Docker is easier and is thus the recommended way of deploying to localhost.
 
 ### Deploying to localhost: Common stuff
 
-#### Creating *.env* file
+#### Creating the *.env* file
 
 Whether you choose to deploy to localhost manually or with Docker, you'll need to create an *.env* file.
 
@@ -24,8 +24,7 @@ deployment-specific configuration in the environment. In localhost, config varia
 # Server stuff #
 ################
 PORT=3000
-PUBLIC_DIR=public
-VIEWS_DIR=views
+#PUBLIC_DIR=public
 
 
 ##############
@@ -61,7 +60,7 @@ DATABASE_NO_SSL=true
 # Bcrypt/auth stuff #
 #####################
 # Set SESSION_SECRET to a strong password.
-BCRYPT_SALTROUNDS=12
+#BCRYPT_SALTROUNDS=12
 SESSION_SECRET=<some strong password>
 
 
@@ -74,26 +73,25 @@ EMAILER_VALIDATED_EMAIL=<Sengrid validated email>
 SENDGRID_API_KEY=<Sengrid API key>
 
 
-########################################
-# Testing stuff (optional, read below) #
-########################################
-# WARNING! Do NOT include this section if you don't plan to test Miniforum!
-PUPPETEER_BROWSER=false
-PUPPETEER_SLOWMO=50
-PUPPETEER_HEADLESS_SLOWMO=10
-PUPPETEER_TIMEOUT=5000
-JEST_TIMEOUT=60000
+#################
+# Testing stuff #
+#################
+#PUPPETEER_HEADLESS=true
+#PUPPETEER_SLOWMO=50
+#PUPPETEER_HEADLESS_SLOWMO=10
+#PUPPETEER_TIMEOUT=5000
+#JEST_TIMEOUT=60000
 ```
 
-Config sections marked as *(optional, read below)* should be omitted if you don't plan to use the feature in question, e.g., if you don't plan to test Miniforum, you should omit the entire *Testing config (optional)* section in your *.env* file.
+Config sections marked as *(optional, read below)* should be omitted if you don't plan to use the feature in question, e.g., if you don't plan to use the emailer service, you should omit the entire *Emailer stuff (optional, read below)* section in your *.env* file.
+
+The variables in the lines starting with *#* are automatically set behind the scenes to a sane default, e.g., if you don't explicitly set `PUBLIC_DIR` by uncommenting that line, Miniforum will automatically set it to `public`. You should probably leave these lines starting with *#* alone, unless you know what you're doing; I put them there just for documentation purposes.
 
 Miniforum implements basic password reset by sending you an email with a new, randomly
 generated password using [Sendgrid](https://sendgrid.com/). If you choose to use this feature,
-you must provide the relevant variables. Otherwise, the site still works but shows an error
-page when the user tries to reset his/her password.
+you must provide the relevant variables. Otherwise, the site still works but shows an error when the user tries to reset his/her password.
 
-The testing variables are optional if you don't plan to run [Jest](https://jestjs.io/) to test
-the site.
+Docker and manual localhost deploys are mutually exclusive: If you wish to deploy with Docker, you must not include the *Manual localhost deploy* (you can also just comment it with *#*) section, and viceversa. In my own setup, I keep both sections in my *.env* file and just comment the section I don't want to use; that way I can easily switch between a Docker/manual deploy.
 
 ### Deploying to localhost with Docker
 
@@ -115,7 +113,7 @@ the site.
 
 Miniforum uses PostgreSQL to store the posts users make, among other things, so you'll need to install it and setup at least one database. I won't be covering here how to get PostgreSQL up and running because it's beyond the scope of this document. Once you have PostgreSQL installed and running, you have to:
 
-* Create the tables necessary for Miniforum to work. You can do this easily by **running the script *postgresql/createTables.sql*** (the easiest way is probably just to copy and paste it and run it in pgAdmin).
+* Create the tables necessary for Miniforum to work. You can do this easily by **running the script *postgresql/createTables.sql***. The easiest way is probably just to copy and paste it in pgAdmin and run it from there.
 
 ### Testing in localhost (Docker and manual)
 

@@ -1,5 +1,5 @@
-require('dotenv').config();
 const sgMail = require('@sendgrid/mail');
+const { EMAILER_VALIDATED_EMAIL, EMAILER_NAME } = require('./globals');
 
 let emailer = null;
 
@@ -8,8 +8,8 @@ function sendNewPassword(userEmail, newPassword) {
     const msg = {
       to: userEmail,
       from: {
-        email: process.env.EMAILER_VALIDATED_EMAIL,
-        name: process.env.EMAILER_NAME,
+        email: EMAILER_VALIDATED_EMAIL,
+        name: EMAILER_NAME,
       },
       subject: 'Password Reset',
       text: `Here is your new password: ${newPassword}`,
