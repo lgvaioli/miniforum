@@ -2,6 +2,11 @@ const faker = require('faker');
 
 const PASSWORD_MINLENGTH = 6;
 
+/**
+ * @description A class with static methods to check user input, and generate invalid
+ * input. Disregard the 'new' keyword in this documentation, it's just a {@link https://github.com/jsdoc/jsdoc/issues/185 JSDoc bug}.
+ * @class
+ */
 class Validator {
   /**
    * Checks for a valid username with the following rules:

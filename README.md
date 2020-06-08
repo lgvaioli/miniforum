@@ -121,3 +121,37 @@ Testing works the same way whether you deployed manually or with Docker:
 
 1. Make sure Miniforum is running.
 2. Run the tests with `npm test` in the project's root directory.
+
+### Deploying to Heroku
+
+The basic steps to deploy to Heroku are the following:
+
+1. Create a Heroku app.
+2. Provision a Postgres database with the *Heroku Postgres* add-on.
+3. Configure the env variables with `heroku config`.
+4. Push the app to Heroku with `git push heroku`.
+
+I won't cover steps 1 and 2 because they are outside the scope of
+this document. Heroku has an [excellent tutorial](https://devcenter.heroku.com/articles/getting-started-with-nodejs) covering Node.js deployment which can help you to get started.
+
+After you've completed steps 1 and 2, you have to provision *at least* the following variables with the
+`heroku config:set` command:
+```
+DATABASE_NO_SSL:false
+DATABASE_URL:<your Heroku Postgres database URL>
+NODE_ENV:production
+SESSION_SECRET:<some strong password>
+```
+
+Optionally, if you want to use the emailer service to reset passwords, you have to provision the following variables:
+```
+EMAILER_NAME:<your emailer name>
+EMAILER_VALIDATED_EMAIL:<sendgrid validated email>
+SENDGRID_API_KEY:<your sendgrid api key>
+```
+
+After all that is done, you just have to push it all to Heroku with:
+
+`git push heroku`
+
+and you're done. Open up your Heroku Miniforum app with `heroku open` and you should see it running!
