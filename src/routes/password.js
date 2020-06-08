@@ -3,11 +3,7 @@ const { getClientIp } = require('request-ip');
 const { REDIRECTS } = require('../../public/js/shared_globals');
 const { PUBLIC_DIR } = require('../globals');
 const { getLogger } = require('../logger');
-const {
-  isValidUsername,
-  isValidPassword,
-  isValidEmail,
-} = require('../validation');
+const { Validator } = require('../validator');
 const { ensureAuthenticated } = require('../authentication');
 
 const logger = getLogger();
@@ -29,12 +25,12 @@ function init(database, emailer) {
     const username = req.body.resetPasswordUsername;
     const email = req.body.resetPasswordEmail;
 
-    if (!isValidUsername(username)) {
+    if (!Validator.checkUsername(username)) {
       logger.warn(`${getClientIp(req)} failed to reset password with username '${username}': Invalid username`);
       return res.json({ error: 'Invalid username!' });
     }
 
-    if (!isValidEmail(email)) {
+    if (!Validator.checkEmail(email)) {
       logger.info(`${getClientIp(req)} failed to reset password with username '${username}' and email '${email}': Invalid email`);
       return res.json({ error: 'Invalid email!' });
     }
@@ -81,7 +77,7 @@ function init(database, emailer) {
       return res.json({ error: 'New password does not match!' });
     }
 
-    if (!isValidPassword(newPassword)) {
+    if (!Validator.checkPassword(newPassword)) {
       logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to change password: Invalid new password`);
       return res.json({ error: 'Passwords must be at least 6 characters long!' });
     }

@@ -1,9 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { getClientIp } = require('request-ip');
-const {
-  isValidComment,
-} = require('../validation');
+const { Validator } = require('../validator');
 const { getLogger } = require('../logger');
 const { ensureAuthenticated } = require('../authentication');
 
@@ -16,7 +14,7 @@ function init(database) {
     const userId = req.user.id;
     let { userInput } = req.body;
 
-    if (!isValidComment(userInput)) {
+    if (!Validator.checkComment(userInput)) {
       logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to make post: Invalid post`);
       res.json({ error: 'Invalid post!' });
       return;
@@ -48,7 +46,7 @@ function init(database) {
     const { postId } = req.body;
     let { editText } = req.body;
 
-    if (!isValidComment(editText)) {
+    if (!Validator.checkComment(editText)) {
       logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to edit post #${postId}: Invalid edit`);
       return res.json({ error: 'Invalid edit!' });
     }

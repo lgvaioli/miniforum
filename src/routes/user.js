@@ -1,11 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const { getClientIp } = require('request-ip');
-const {
-  isValidUsername,
-  isValidEmail,
-  isValidPassword,
-} = require('../validation');
+const { Validator } = require('../validator');
 const { REDIRECTS } = require('../../public/js/shared_globals');
 const { getLogger } = require('../logger');
 
@@ -21,17 +17,17 @@ function init(database) {
       password: req.body.accountPassword,
     };
 
-    if (!isValidUsername(newUser.username)) {
+    if (!Validator.checkUsername(newUser.username)) {
       logger.warn(`${getClientIp(req)} failed to create new account with username '${newUser.username}': Invalid username`);
       return res.json({ error: 'Invalid username!' });
     }
 
-    if (!isValidEmail(newUser.email)) {
+    if (!Validator.checkEmail(newUser.email)) {
       logger.warn(`${getClientIp(req)} failed to create new account with username '${newUser.username}' and email '${newUser.email}': Invalid email`);
       return res.json({ error: 'Invalid email!' });
     }
 
-    if (!isValidPassword(newUser.password)) {
+    if (!Validator.checkPassword(newUser.password)) {
       logger.warn(`${getClientIp(req)} failed to create new account: Invalid password`);
       return res.json({ error: 'Passwords must be at least 6 characters long!' });
     }

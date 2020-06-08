@@ -24,14 +24,12 @@ function checkCriticalVar(varName) {
  */
 checkCriticalVar('PORT');
 checkCriticalVar('DATABASE_URL');
-checkCriticalVar('DATABASE_TEST_URL');
 checkCriticalVar('DATABASE_NO_SSL');
 checkCriticalVar('SESSION_SECRET');
 
 // Export critical variables.
 exports.PORT = process.env.PORT;
 exports.DATABASE_URL = process.env.DATABASE_URL;
-exports.DATABASE_TEST_URL = process.env.DATABASE_TEST_URL;
 exports.DATABASE_NO_SSL = process.env.DATABASE_NO_SSL === 'true';
 exports.SESSION_SECRET = process.env.SESSION_SECRET;
 
@@ -50,5 +48,6 @@ exports.PUPPETEER_HEADLESS_SLOWMO = process.env.PUPPETEER_HEADLESS_SLOWMO ? pars
 exports.PUPPETEER_TIMEOUT = process.env.PUPPETEER_TIMEOUT ? parseInt(process.env.PUPPETEER_TIMEOUT, 10) : 5000;
 exports.JEST_TIMEOUT = process.env.JEST_TIMEOUT ? parseInt(process.env.JEST_TIMEOUT, 10) : 60000;
 exports.EMAILER_NAME = process.env.EMAILER_NAME;
+exports.DATABASE_TEST_URL = process.env.DATABASE_TEST_URL;
 exports.EMAILER_VALIDATED_EMAIL = process.env.EMAILER_VALIDATED_EMAIL;
 exports.SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;

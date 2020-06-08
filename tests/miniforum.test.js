@@ -14,7 +14,8 @@ const {
   PUPPETEER_TIMEOUT,
   JEST_TIMEOUT,
   PORT,
-} = require('../src/globals.js');
+} = require('../src/globals');
+const { Validator } = require('../src/validator');
 
 jest.setTimeout(JEST_TIMEOUT);
 
@@ -162,14 +163,10 @@ describe('New account form tests', () => {
   test('creates new account - invalid inputs', async () => {
     await automaton.goto(LOGIN_FULLURL);
 
-    /**
-     * FIXME: This implicitly hard-codes our validation rules. The validation module
-     * should have functions to generate random invalid inputs, e.g., createInvalidUsername.
-     */
     const userData = [
-      '+-+*/.,.,.', // invalid username
-      'invalidemail', // invalid email
-      '123', // invalid password
+      Validator.createInvalidUsername(),
+      Validator.createInvalidEmail(),
+      Validator.createInvalidPassword(),
     ];
 
     // Submit form and wait for #toast-failure

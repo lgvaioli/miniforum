@@ -1,4 +1,5 @@
 const express = require('express');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const { Database } = require('./database');
 const routersInit = require('./routes/routers');
@@ -15,6 +16,10 @@ const {
 } = require('./globals');
 
 const app = express();
+
+// Setup Helmet
+app.use(helmet());
+
 const logger = getLogger();
 
 /**
