@@ -1,7 +1,15 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const faker = require('faker');
+const { getLogger } = require('./logger');
 const { DATABASE_NO_SSL, BCRYPT_SALTROUNDS } = require('./globals');
+
+const logger = getLogger();
+
+function getClientConnectionString(client) {
+  const params = client.connectionParameters;
+  return `${params.user}@${params.host}/${params.database}`;
+}
 
 class Database {
   /**
@@ -15,25 +23,21 @@ class Database {
       connectionString: databaseUrl,
       ssl: DATABASE_NO_SSL ? false : { rejectUnauthorized: false },
     });
-  }
 
-  /**
-   * Checks the database connection.
-   * @returns {Promise} Resolves to true if a connection is established, or rejects with an Error.
-   */
-  isConnected() {
-    return new Promise((resolve, reject) => {
-      /**
-       * Make dumb query to check if we successfully connected to the database.
-       * I couldn't find a proper way to do this; PG's docs kinda suck.
-       */
-      this.pool.query('SELECT NOW()', (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(true);
-        }
-      });
+    /**
+     * Database connections are a scarce and essential resource (e.g. the Heroku Postgres
+     * free plan offers a maximum of 20 connections), so we'd better keep an eye on them.
+     */
+    this.pool.on('connect', (client) => {
+      logger.warn(`pg.Client connected: ${getClientConnectionString(client)}; pool.totalCount: ${this.pool.totalCount}; pool.idleCount: ${this.pool.idleCount}; pool.waitingCount: ${this.pool.waitingCount}`);
+    });
+
+    /**
+     * Listening to this event is fundamental because otherwise it might crash the server
+     * with an uncaught error.
+     */
+    this.pool.on('error', (error) => {
+      logger.error(`pg.Pool: ${error}`);
     });
   }
 

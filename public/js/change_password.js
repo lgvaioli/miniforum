@@ -31,7 +31,8 @@ $(document).ready(() => {
         }
       },
       error: (err) => {
-        Toast.failure(JSON.stringify(err));
+        Toast.failure('Error: Could not change password. Check browser console for details');
+        console.log(`Could not change password: ${err}`);
       },
     });
   });

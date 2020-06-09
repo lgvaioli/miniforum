@@ -37,7 +37,7 @@ function init(database) {
       })
       .catch((err) => {
         logger.error(`${getClientIp(req)} ('${req.user.username}') database.makePost error: ${err}`);
-        return res.json({ error: err });
+        return res.json({ error: err.toString() });
       });
   });
 
@@ -69,12 +69,12 @@ function init(database) {
           })
           .catch((err) => {
             logger.error(`${getClientIp(req)} ('${req.user.username}') database.editPost error while trying to edit post #${postId}: ${err}`);
-            return res.json({ error: err });
+            return res.json({ error: err.toString() });
           });
       })
       .catch((err) => {
         logger.error(`${getClientIp(req)} ('${req.user.username}') database.findPost error while trying to find post #${postId}: ${err}`);
-        return res.json({ error: err });
+        return res.json({ error: err.toString() });
       });
   });
 
@@ -98,12 +98,12 @@ function init(database) {
           })
           .catch((err) => {
             logger.error(`${getClientIp(req)} ('${req.user.username}') database.deletePost error: ${err}`);
-            return res.json({ error: err });
+            return res.json({ error: err.toString() });
           });
       })
       .catch((err) => {
         logger.error(`${getClientIp(req)} ('${req.user.username}') database.findPost error: ${err}`);
-        return res.json({ error: err });
+        return res.json({ error: err.toString() });
       });
   });
 
@@ -123,7 +123,7 @@ function init(database) {
       })
       .catch((err) => {
         logger.info(`${getClientIp(req)} ('${req.user.username}') database.getPosts error: ${err}`);
-        return res.json({ error: err });
+        return res.json({ error: err.toString() });
       });
   });
 

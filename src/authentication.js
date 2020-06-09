@@ -36,8 +36,7 @@ function setupAuthentication(app, database) {
       if (req.originalUrl === '/') {
         next();
       } else {
-        // res.redirect('/');
-        res.render('error', { message: err });
+        res.json({ error: err.toString() });
       }
     } else {
       next();

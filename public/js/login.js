@@ -26,7 +26,8 @@ $(document).ready(() => {
         }
       },
       error: (err) => {
-        Toast.failure(err);
+        Toast.failure('Error: Could not log in. Check browser console for details');
+        console.log(`Could not log in: ${err}`);
       },
     });
   });
@@ -58,7 +59,8 @@ $(document).ready(() => {
         }
       },
       error: (err) => {
-        Toast.failure(err);
+        Toast.failure('Error: Could not create account. Check browser console for details');
+        console.log(`Could not create account: ${err}`);
       },
     });
   });
@@ -89,7 +91,8 @@ $(document).ready(() => {
         }
       },
       error: (err) => {
-        Toast.failure(err);
+        Toast.failure('Error: Could not reset password. Check browser console for details');
+        console.log(`Could not reset password: ${err}`);
       },
     });
   });

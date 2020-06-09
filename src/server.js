@@ -48,54 +48,31 @@ app.set('views', VIEWS_DIR);
 app.set('view engine', 'pug');
 
 const database = new Database(DATABASE_URL);
-database
-  .isConnected()
-  .then(() => {
-    logger.info(`Connected to database '${DATABASE_URL}'`);
 
-    // Set up authentication
-    setupAuthentication(app, database);
+// Set up authentication
+setupAuthentication(app, database);
 
-    // Set up emailer
-    const emailer = SENDGRID_API_KEY ? getEmailer(SENDGRID_API_KEY) : null;
+// Set up emailer
+const emailer = SENDGRID_API_KEY ? getEmailer(SENDGRID_API_KEY) : null;
 
-    // Set up routes
-    const routers = routersInit(database, emailer);
-    app.use(ROUTES.HOME, routers.home);
-    app.use(ROUTES.FORUM, routers.forum);
-    app.use(ROUTES.LOGIN, routers.login);
-    app.use(ROUTES.LOGOUT, routers.logout);
-    app.use(ROUTES.USER, routers.user);
-    app.use(ROUTES.PASSWORD, routers.password);
-    app.use(ROUTES.POST, routers.post);
+// Set up routes
+const routers = routersInit(database, emailer);
+app.use(ROUTES.HOME, routers.home);
+app.use(ROUTES.FORUM, routers.forum);
+app.use(ROUTES.LOGIN, routers.login);
+app.use(ROUTES.LOGOUT, routers.logout);
+app.use(ROUTES.USER, routers.user);
+app.use(ROUTES.PASSWORD, routers.password);
+app.use(ROUTES.POST, routers.post);
 
-    // 404 route
-    app.use((req, res) => {
-      res.render('error', { message: 'Page not found!' });
-    });
+// 404 route
+app.use((_, res) => {
+  res.render('error', { message: 'Page not found!' });
+});
 
-    app.listen(PORT, (listenErr) => {
-      if (listenErr) {
-        return logger.error(`Could not start server: ${listenErr}`);
-      }
-      return logger.info(`Server listening at port ${PORT}...`);
-    });
-  })
-  .catch((err) => {
-    /**
-     * Critical error: Could not connect to database. Set up a catch-all route to
-     * display a message error.
-     */
-    logger.error(`Could not connect to database '${DATABASE_URL}': ${err}`);
-
-    app.get('*', (req, res) => {
-      res.render('error', { message: 'Critical error: Could not connect to database!' });
-    });
-
-    app.listen(PORT, (listenErr) => {
-      if (listenErr) {
-        return logger.error(`Could not start server: ${listenErr}`);
-      }
-      return logger.info(`Server listening at port ${PORT}...`);
-    });
-  });
+app.listen(PORT, (listenErr) => {
+  if (listenErr) {
+    return logger.error(`Could not start server: ${listenErr}`);
+  }
+  return logger.info(`Server listening at port ${PORT}...`);
+});

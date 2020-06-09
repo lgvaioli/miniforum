@@ -14,27 +14,24 @@ $(document).ready(() => {
       url: BROWSER_ROUTES.POST,
       data: JSON.stringify({ postId }),
       dataType: 'json',
-      success: (serverResponse) => {
+      success: (res) => {
         // FIXME: this is kinda ugly and we can probably fix it easily by just
         // NOT returning a 200 (OK) code from the server when something is... not ok.
-        if (serverResponse.error) {
-          Toast.failure(serverResponse.error);
+        if (res.error) {
+          Toast.failure(res.error);
           return;
         }
 
-        Toast.success(serverResponse);
+        Toast.success(res);
 
         // Hide and then remove from DOM
         $(`#post_${postId}`).hide(HIDE_ANIMATION_DURATION, () => {
           $(this).remove();
         });
-
-        // Delete (remove from DOM) post from postBoard
-        // $("#post_" + postId).remove();
       },
       error: (err) => {
         Toast.failure('Error: Could not delete post. Check browser console for details');
-        console.log(`Could not delete post: ${JSON.stringify(err)}`);
+        console.log(`Could not delete post: ${err}`);
       },
     });
   }
@@ -50,14 +47,14 @@ $(document).ready(() => {
       url: BROWSER_ROUTES.POST,
       data: JSON.stringify({ postId, editText }),
       dataType: 'json',
-      success: (data) => {
-        if (data.error) {
-          Toast.failure(data.error);
+      success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
           return;
         }
 
         // If update was successful the server returns the updated post
-        const post = data;
+        const post = res;
 
         // Update post text
         $(`#postText_${postId}`).text(editText);
@@ -74,7 +71,7 @@ $(document).ready(() => {
       },
       error: (err) => {
         Toast.failure('Error: Could not edit post. Check browser console for details');
-        console.log(`Error: ${JSON.stringify(err)}`);
+        console.log(`Error: ${err}`);
       },
     });
   }
@@ -212,20 +209,21 @@ $(document).ready(() => {
       type: 'GET',
       url: BROWSER_ROUTES.POST,
       dataType: 'json',
-      success: (data) => {
-        if (data.error) {
-          Toast.failure(JSON.stringify(data));
+      success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
           return;
         }
 
-        data.posts.forEach((post) => {
-          const userOwnsPost = post.user_id === data.userId;
+        res.posts.forEach((post) => {
+          const userOwnsPost = post.user_id === res.userId;
           addPost(post.id, post.username, post.created_on, post.text,
             userOwnsPost, false);
         });
       },
       error: (err) => {
-        Toast.failure(JSON.stringify(err));
+        Toast.failure('Error: Could not get posts. Check browser console for details');
+        console.log(`Error: ${err}`);
       },
     });
   }
@@ -249,14 +247,14 @@ $(document).ready(() => {
       url: BROWSER_ROUTES.POST,
       data: JSON.stringify({ userInput }),
       dataType: 'json',
-      success: (data) => {
-        if (data.error) {
-          Toast.failure(data.error);
+      success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
           return;
         }
 
-        const { post } = data;
-        addPost(post.id, data.username, post.created_on, post.text, true, true);
+        const { post } = res;
+        addPost(post.id, res.username, post.created_on, post.text, true, true);
 
         // Clear input. We also trigger the input event to update the chars
         // left counter; otherwise it gets stuck at the last value, which is
@@ -265,10 +263,11 @@ $(document).ready(() => {
           .val('')
           .trigger('input');
 
-        Toast.success(`Successfuly posted! Post #${post.id}`);
+        Toast.success(`Successfully posted! Post #${post.id}`);
       },
       error: (err) => {
-        console.log(`Error: ${JSON.stringify(err)}`);
+        Toast.failure('Error: Could not make post. Check browser console for details');
+        console.log(`Error: ${err}`);
       },
     });
   });
@@ -287,13 +286,19 @@ $(document).ready(() => {
       type: 'GET',
       url: BROWSER_ROUTES.LOGOUT,
       dataType: 'json',
-      success: (data) => {
-        if (data.redirect) {
-          window.location.replace(data.redirect);
+      success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
+          return;
+        }
+
+        if (res.redirect) {
+          window.location.replace(res.redirect);
         }
       },
       error: (err) => {
-        Toast.failure(`Logout error: ${JSON.stringify(err)}`);
+        Toast.failure('Error: Could not log out. Check browser console for details');
+        console.log(`Error: ${err}`);
       },
     });
   });
