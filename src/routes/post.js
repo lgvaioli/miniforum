@@ -16,7 +16,9 @@ function init(database) {
 
     if (!Validator.checkComment(userInput)) {
       logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to make post: Invalid post`);
-      res.json({ error: 'Invalid post!' });
+      res
+        .status(422)
+        .json({ error: 'Invalid post!' });
       return;
     }
 
@@ -33,11 +35,15 @@ function init(database) {
           post,
         };
 
-        return res.json(data);
+        return res
+          .status(200)
+          .json(data);
       })
       .catch((err) => {
         logger.error(`${getClientIp(req)} ('${req.user.username}') database.makePost error: ${err}`);
-        return res.json({ error: err.toString() });
+        return res
+          .status(500)
+          .json({ error: err.toString() });
       });
   });
 
@@ -48,7 +54,9 @@ function init(database) {
 
     if (!Validator.checkComment(editText)) {
       logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to edit post #${postId}: Invalid edit`);
-      return res.json({ error: 'Invalid edit!' });
+      return res
+        .status(422)
+        .json({ error: 'Invalid edit!' });
     }
 
     editText = editText.trim();
@@ -58,23 +66,31 @@ function init(database) {
       .then((post) => {
         if (post.user_id !== req.user.id) {
           logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to edit post #${postId}: Post belongs to another user. Note that this is highly suspicious behavior.`);
-          return res.json({ error: "You can't edit other users' posts!" });
+          return res
+            .status(401)
+            .json({ error: "You can't edit other users' posts!" });
         }
 
         return database
           .editPost(postId, editText)
           .then((editedPost) => {
             logger.info(`${getClientIp(req)} ('${req.user.username}') edited post #${postId}`);
-            return res.json(editedPost);
+            return res
+              .status(200)
+              .json(editedPost);
           })
           .catch((err) => {
             logger.error(`${getClientIp(req)} ('${req.user.username}') database.editPost error while trying to edit post #${postId}: ${err}`);
-            return res.json({ error: err.toString() });
+            return res
+              .status(500)
+              .json({ error: err.toString() });
           });
       })
       .catch((err) => {
         logger.error(`${getClientIp(req)} ('${req.user.username}') database.findPost error while trying to find post #${postId}: ${err}`);
-        return res.json({ error: err.toString() });
+        return res
+          .status(500)
+          .json({ error: err.toString() });
       });
   });
 
@@ -87,23 +103,31 @@ function init(database) {
       .then((post) => {
         if (post.user_id !== req.user.id) {
           logger.warn(`${getClientIp(req)} ('${req.user.username}') failed to delete post #${postId}: Post belongs to another user. Note that this is highly suspicious behavior.`);
-          return res.json({ error: "You can't delete other users' posts!" });
+          return res
+            .status(401)
+            .json({ error: "You can't delete other users' posts!" });
         }
 
         return database
           .deletePost(postId)
           .then((success) => {
             logger.info(`${getClientIp(req)} ('${req.user.username}') deleted post #${postId}`);
-            return res.json(success);
+            return res
+              .status(200)
+              .json(success);
           })
           .catch((err) => {
             logger.error(`${getClientIp(req)} ('${req.user.username}') database.deletePost error: ${err}`);
-            return res.json({ error: err.toString() });
+            return res
+              .status(500)
+              .json({ error: err.toString() });
           });
       })
       .catch((err) => {
         logger.error(`${getClientIp(req)} ('${req.user.username}') database.findPost error: ${err}`);
-        return res.json({ error: err.toString() });
+        return res
+          .status(500)
+          .json({ error: err.toString() });
       });
   });
 
@@ -119,11 +143,15 @@ function init(database) {
           posts,
         };
 
-        return res.json(data);
+        return res
+          .status(200)
+          .json(data);
       })
       .catch((err) => {
         logger.info(`${getClientIp(req)} ('${req.user.username}') database.getPosts error: ${err}`);
-        return res.json({ error: err.toString() });
+        return res
+          .status(500)
+          .json({ error: err.toString() });
       });
   });
 

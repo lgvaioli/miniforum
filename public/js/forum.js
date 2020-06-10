@@ -15,13 +15,6 @@ $(document).ready(() => {
       data: JSON.stringify({ postId }),
       dataType: 'json',
       success: (res) => {
-        // FIXME: this is kinda ugly and we can probably fix it easily by just
-        // NOT returning a 200 (OK) code from the server when something is... not ok.
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         Toast.success(res);
 
         // Hide and then remove from DOM
@@ -29,9 +22,8 @@ $(document).ready(() => {
           $(this).remove();
         });
       },
-      error: (err) => {
-        Toast.failure('Error: Could not delete post. Check browser console for details');
-        console.log(`Could not delete post: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   }
@@ -48,11 +40,6 @@ $(document).ready(() => {
       data: JSON.stringify({ postId, editText }),
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         // If update was successful the server returns the updated post
         const post = res;
 
@@ -69,9 +56,8 @@ $(document).ready(() => {
 
         Toast.success(`Updated post #${postId}!`);
       },
-      error: (err) => {
-        Toast.failure('Error: Could not edit post. Check browser console for details');
-        console.log(`Error: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   }
@@ -210,20 +196,14 @@ $(document).ready(() => {
       url: BROWSER_ROUTES.POST,
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         res.posts.forEach((post) => {
           const userOwnsPost = post.user_id === res.userId;
           addPost(post.id, post.username, post.created_on, post.text,
             userOwnsPost, false);
         });
       },
-      error: (err) => {
-        Toast.failure('Error: Could not get posts. Check browser console for details');
-        console.log(`Error: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   }
@@ -248,11 +228,6 @@ $(document).ready(() => {
       data: JSON.stringify({ userInput }),
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         const { post } = res;
         addPost(post.id, res.username, post.created_on, post.text, true, true);
 
@@ -265,9 +240,8 @@ $(document).ready(() => {
 
         Toast.success(`Successfully posted! Post #${post.id}`);
       },
-      error: (err) => {
-        Toast.failure('Error: Could not make post. Check browser console for details');
-        console.log(`Error: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   });
@@ -287,18 +261,12 @@ $(document).ready(() => {
       url: BROWSER_ROUTES.LOGOUT,
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         if (res.redirect) {
           window.location.replace(res.redirect);
         }
       },
-      error: (err) => {
-        Toast.failure('Error: Could not log out. Check browser console for details');
-        console.log(`Error: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   });

@@ -18,11 +18,6 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         if (res.redirect) {
           Toast.success('Password changed! Gonna redirect you so you can log back in', 4000);
           setTimeout(() => {
@@ -30,9 +25,8 @@ $(document).ready(() => {
           }, 5000);
         }
       },
-      error: (err) => {
-        Toast.failure('Error: Could not change password. Check browser console for details');
-        console.log(`Could not change password: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   });

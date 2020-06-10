@@ -6,7 +6,9 @@ const router = express.Router();
 
 // GET returns forum page.
 router.get('/', ensureAuthenticated, (req, res) => {
-  res.sendFile('html/forum.html', { root: PUBLIC_DIR });
+  res
+    .status(200)
+    .sendFile('html/forum.html', { root: PUBLIC_DIR });
 });
 
 module.exports = router;

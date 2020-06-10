@@ -16,18 +16,12 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         if (res.redirect) {
           window.location.replace(res.redirect);
         }
       },
-      error: (err) => {
-        Toast.failure('Error: Could not log in. Check browser console for details');
-        console.log(`Could not log in: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   });
@@ -49,18 +43,12 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         if (res.redirect) {
           window.location.replace(res.redirect);
         }
       },
-      error: (err) => {
-        Toast.failure('Error: Could not create account. Check browser console for details');
-        console.log(`Could not create account: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   });
@@ -81,18 +69,12 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
-        if (res.error) {
-          Toast.failure(res.error);
-          return;
-        }
-
         if (res.msg) {
           Toast.success(res.msg, 10000);
         }
       },
-      error: (err) => {
-        Toast.failure('Error: Could not reset password. Check browser console for details');
-        console.log(`Could not reset password: ${err}`);
+      error: (res) => {
+        Toast.failure(res.responseJSON.error);
       },
     });
   });

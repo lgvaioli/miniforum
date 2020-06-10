@@ -20,7 +20,9 @@ router.get('/', ensureAuthenticated, (req, res) => {
    * We don't actually redirect because we use jQuery ajax in the client
    * side, and handling "real" redirects with that is a mess.
    */
-  res.json({ redirect: REDIRECTS.LOGOUT.SUCCESS });
+  res
+    .status(200)
+    .json({ redirect: REDIRECTS.LOGOUT.SUCCESS });
 });
 
 module.exports = router;
