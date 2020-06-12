@@ -4,6 +4,7 @@ const { getClientIp } = require('request-ip');
 const { Validator } = require('../validator');
 const { getLogger } = require('../logger');
 const { ensureAuthenticated } = require('../authentication');
+const { POST_BATCH_SIZE } = require('../globals');
 
 const logger = getLogger();
 const router = express.Router();
@@ -133,10 +134,20 @@ function init(database) {
 
   // GET returns all forum posts.
   router.get('/', ensureAuthenticated, (req, res) => {
+    let fromId;
+
+    if (req.query.fromId) {
+      fromId = parseInt(req.query.fromId, 10);
+
+      if (Number.isNaN(fromId)) {
+        fromId = undefined;
+      }
+    }
+
     database
-      .getPosts()
+      .getPosts(POST_BATCH_SIZE, fromId)
       .then((posts) => {
-        logger.info(`${getClientIp(req)} ('${req.user.username}') got all posts`);
+        logger.info(`${getClientIp(req)} ('${req.user.username}') got posts`);
 
         const data = {
           userId: req.user.id,

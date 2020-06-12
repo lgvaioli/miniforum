@@ -303,15 +303,28 @@ class Database {
   }
 
   /**
-   * Gets all the posts in created_on descending order.
+   * Gets posts in descending posts.id order.
+   * @param {Number} len The number of posts to get.
+   * @param {Number} fromId Optional parameter. If passed, only posts WHERE post.id < fromId
+   * will be returned.
    * @returns {Promise} Resolves to an array of posts inner joined with users.username
    * rows, i.e. { id, text, created_on, user_id, username } on success, or rejects with an Error.
    */
-  getPosts() {
+  getPosts(len, fromId = undefined) {
     return new Promise((resolve, reject) => {
-      const query = {
-        text: 'SELECT posts.*, users.username FROM posts INNER JOIN users ON posts.user_id = users.id ORDER BY posts.id DESC',
-      };
+      let query;
+
+      if (fromId) {
+        query = {
+          text: 'SELECT posts.*, users.username FROM posts INNER JOIN users ON posts.user_id = users.id WHERE posts.id < $1 ORDER BY posts.id DESC LIMIT $2',
+          values: [fromId, len],
+        };
+      } else {
+        query = {
+          text: 'SELECT posts.*, users.username FROM posts INNER JOIN users ON posts.user_id = users.id ORDER BY posts.id DESC LIMIT $1',
+          values: [len],
+        };
+      }
 
       this.pool.query(query, (err, result) => {
         if (err) {
@@ -387,7 +400,7 @@ class Database {
    * Closes database connection.
    */
   close() {
-    this.pool.end();
+    return this.pool.end();
   }
 }
 

@@ -51,3 +51,4 @@ exports.EMAILER_NAME = process.env.EMAILER_NAME;
 exports.DATABASE_TEST_URL = process.env.DATABASE_TEST_URL;
 exports.EMAILER_VALIDATED_EMAIL = process.env.EMAILER_VALIDATED_EMAIL;
 exports.SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+exports.POST_BATCH_SIZE = process.env.POST_BATCH_SIZE ? parseInt(process.env.POST_BATCH_SIZE, 10) : 20;

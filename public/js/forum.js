@@ -2,6 +2,26 @@
 const HIDE_ANIMATION_DURATION = 300;
 
 $(document).ready(() => {
+  /**
+   * Infinite scrolling globals.
+   */
+
+  // Observer options
+  const observerOptions = {
+    root: null, // viewport
+    rootMargin: '0px',
+    threshold: [0.1],
+  };
+
+  // Sentinel which triggers intersection event. It should always be the last post.
+  let currentSentinel = null;
+
+  // Id of last post
+  let lastPostId = -1;
+
+  // Observer
+  let observer = null;
+
   // Set default input counter value, from global variable
   $('#input-counter').text(POST_MAXLENGTH);
 
@@ -62,8 +82,10 @@ $(document).ready(() => {
     });
   }
 
-  // Builds an editable post widget (i.e. the textarea with a chars left counter that
-  // appears when the user clicks on "Edit").
+  /**
+   * Builds an editable post widget (i.e. the textarea with a chars left counter that
+   * appears when the user clicks on "Edit").
+   */
   function buildEditablePostWidget(postId, postText, $postContainer) {
     const $form = $('<div>', { id: `editable_${postId}`, class: 'post-editable' });
     $form.css('display', 'none');
@@ -105,10 +127,25 @@ $(document).ready(() => {
     return $form;
   }
 
-  // Adds a post to the postBoard div. If prepend is true, adds it to the beginning
-  // of the postBoard div (i.e. prepends it); otherwise, adds it to the end (i.e appends it).
-  // If userOwnsPost is true, "Edit" and "Delete" buttons are added.
-  function addPost(id, username, createdOn, text, userOwnsPost, prepend) {
+  /**
+   * Adds a post to the postBoard div.
+   * @param {Object} post An object { id, username, created_on, text } with the
+   * corresponding post data.
+   * @param {Boolean} userOwnsPost A boolean indicating whether this user (the user logged in
+   * in this browser) made this post or not. This determines whether edit/delete buttons
+   * are added or not (they are added only if userOwnsPost is true).
+   * @param {Boolean} prepend If true, prepends the post; otherwise, appends it.
+   * @returns {Object} The DOM Element corresponding to the post's top level container.
+   */
+  function addPost(post, userOwnsPost, prepend) {
+    const {
+      id,
+      username,
+      // eslint-disable-next-line camelcase
+      created_on,
+      text,
+    } = post;
+
     const $topLevelContainer = $('<div>');
     const $postContainer = $('<div>', {
       id: `post_${id}`,
@@ -131,7 +168,7 @@ $(document).ready(() => {
      * FIXME: this should not be hardcoded because it's clearly dependent on the
      * user's locale/preferences.
      */
-    const createdOnStr = new Date(createdOn).toLocaleString('es-AR', {
+    const createdOnStr = new Date(created_on).toLocaleString('es-AR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -187,20 +224,54 @@ $(document).ready(() => {
     } else {
       $('#postBoard').append($topLevelContainer);
     }
+
+    return $topLevelContainer[0];
   }
 
   // GET posts from server
-  function getPosts() {
+  function getPosts(fromId = undefined) {
+    /**
+     * I'm gonna explain a little why this ajax's data is not JSON like the others.
+     * jQuery, for stupid spec reasons (https://stackoverflow.com/questions/10298899/how-to-send-data-in-request-body-with-a-get-when-using-jquery-ajax),
+     * does *not* send data as JSON if the type of request is GET. It doesn't matter if
+     * you say "contentType: 'application/json'" and then pass JSON.stringified data in
+     * 'data': jQuery will IGNORE that shit and just send your data as query params (i.e.
+     * http://someurl?param1=value1&param2=value2...). This caused me headaches because
+     * I was expecting data to be in the request body from the server-side. After
+     * debugging this for a while (thank God for Chrome's devtools!), I said 'fuck it'
+     * and just changed the server-side code to expect query params.
+     * Given that jQuery isn't actually sending JSON, I felt it was more appropriate to
+     * reflect that fact explicitly and using the default 'application/x-www-form-urlencoded'
+     * type with a plain old 'param=value' data.
+     */
     $.ajax({
       type: 'GET',
       url: BROWSER_ROUTES.POST,
+      data: fromId ? `fromId=${fromId}` : '',
       dataType: 'json',
       success: (res) => {
-        res.posts.forEach((post) => {
-          const userOwnsPost = post.user_id === res.userId;
-          addPost(post.id, post.username, post.created_on, post.text,
-            userOwnsPost, false);
-        });
+        // If no posts were returned, just return
+        if (res.posts.length === 0) {
+          return;
+        }
+
+        let lastPost;
+
+        for (let i = 0; i < res.posts.length; i += 1) {
+          lastPost = addPost(res.posts[i], res.posts[i].user_id === res.userId, false);
+        }
+
+        // Update last post id
+        lastPostId = res.posts[res.posts.length - 1].id;
+
+        // Unobserve currentSentinel, if any
+        if (currentSentinel) {
+          observer.unobserve(currentSentinel);
+        }
+
+        // Update currentSentinel and observe it
+        currentSentinel = lastPost;
+        observer.observe(currentSentinel);
       },
       error: (res) => {
         Toast.failure(res.responseJSON.error);
@@ -228,12 +299,19 @@ $(document).ready(() => {
       data: JSON.stringify({ userInput }),
       dataType: 'json',
       success: (res) => {
-        const { post } = res;
-        addPost(post.id, res.username, post.created_on, post.text, true, true);
+        const post = {
+          id: res.post.id,
+          created_on: res.post.created_on,
+          text: res.post.text,
+          username: res.username,
+        };
 
-        // Clear input. We also trigger the input event to update the chars
-        // left counter; otherwise it gets stuck at the last value, which is
-        // just ugly.
+        addPost(post, true, true);
+
+        /**
+         * Clear input. We also trigger the input event to update the chars
+         * left counter; otherwise it gets stuck at the last value, which is just ugly.
+         */
         $('#userInput')
           .val('')
           .trigger('input');
@@ -276,5 +354,13 @@ $(document).ready(() => {
     window.location.replace(BROWSER_ROUTES.PASSWORD);
   });
 
+  // Set up intersection observer
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      getPosts(lastPostId);
+    }
+  }, observerOptions);
+
+  // Get initial post batch
   getPosts();
 });
