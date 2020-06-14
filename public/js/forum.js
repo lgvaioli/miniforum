@@ -154,8 +154,6 @@ $(document).ready(() => {
     });
     $topLevelContainer.append($postContainer);
 
-    const $userImage = $('<img>', { src: '/user.jpg', class: 'post-userImage' });
-
     const $postUsername = $('<p>', { class: 'post-info' });
     $postUsername.text(`User: ${username}`);
 
@@ -213,7 +211,6 @@ $(document).ready(() => {
       $postContainer.append($editBtn);
     }
 
-    $postContainer.append($userImage);
     $postContainer.append($postUsername);
     $postContainer.append($postId);
     $postContainer.append($createdOn);
