@@ -1,0 +1,14 @@
+FROM node:12-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install --production
+
+# FIXME: don't hardcode port
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+
+COPY . .

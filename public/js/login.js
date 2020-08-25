@@ -16,6 +16,11 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
+          return;
+        }
+
         if (res.redirect) {
           window.location.replace(res.redirect);
         }
@@ -43,6 +48,11 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
+          return;
+        }
+
         if (res.redirect) {
           window.location.replace(res.redirect);
         }
@@ -69,6 +79,11 @@ $(document).ready(() => {
       data: JSON.stringify(data),
       dataType: 'json',
       success: (res) => {
+        if (res.error) {
+          Toast.failure(res.error);
+          return;
+        }
+
         if (res.msg) {
           Toast.success(res.msg, 10000);
         }

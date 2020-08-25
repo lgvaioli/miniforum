@@ -1,0 +1,10 @@
+**/node_modules/
+postgresql/
+tests/
+.vscode/
+.eslintrc.json
+.gitignore
+docker-compose.yml
+miniforum.code-workspace
+Procfile
+README.md

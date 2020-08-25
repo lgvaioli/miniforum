@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: miniforum
+  labels:
+    app: miniforum
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: miniforum
+  template:
+    metadata:
+      labels:
+        app: miniforum
+    spec:
+      containers:
+      - name: miniforum
+        image: lgvaioli/miniforum:1.0
+        ports:
+        - containerPort: 3000   # FIXME: Don't hardcode this

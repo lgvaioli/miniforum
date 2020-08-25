@@ -1,0 +1,11 @@
+# FIXME: We should create the configmap from the node .env file
+# with: kubectl create configmap miniforum-configmap --from-env-file=../.env
+# I don't do it because first I want to do it the dumb way to get some practice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: miniforum-configmap
+data:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: fNu3J6Z69GVkSPf5
+  POSTGRES_DB: postgres
