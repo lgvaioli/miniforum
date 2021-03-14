@@ -1,17 +1,24 @@
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require('bcrypt');
-const connectPgSimple = require('connect-pg-simple');
 const { REDIRECTS } = require('../public/js/shared_globals');
-const { SESSION_SECRET } = require('./globals');
+const {
+  SESSION_SECRET,
+  DATABASE_URL,
+  DATABASE_NO_SSL
+} = require('./globals');
 
 // Takes express app and sets up authentication with Passport
 function setupAuthentication(app, database) {
-  const connectPgSimpleStore = new (connectPgSimple(session))();
-
   app.use(session({
-    store: connectPgSimpleStore,
+    store: new pgSession({
+      conObject: {
+        connectionString: DATABASE_URL,
+        ssl: DATABASE_NO_SSL ? false : true,
+      },
+    }),
     secret: SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
